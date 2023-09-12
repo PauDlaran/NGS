@@ -5,7 +5,7 @@ from PIL import ImageTk,Image
 import os
 import zmq
 #test
-"testroman"
+#testroman
 class App(customtkinter.CTk):
 
     # Taille à l'ouverture de la fenetre
