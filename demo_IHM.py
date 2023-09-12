@@ -588,23 +588,7 @@ class App(customtkinter.CTk):
                 if e.errno == zmq.EAGAIN:
                     pass  # no message was ready (yet!)
 
-    def Aff_vitM2(self, value):
-        value = self.slider_m2.get()
-        self.label_vm2.configure(text="Vitesse M2 = " + str(int(value)) + " %")
-        if self.IsConnected:
-            try:
-                self.socket.send(b"V2"+str(value).encode())
-                self.socket.setsockopt(zmq.RCVTIMEO, 500)
-                self.socket.setsockopt(zmq.LINGER, 0)
-                mess = self.socket.recv()
-            except zmq.ZMQError as e:
-                mess = ""
-                print("error not connected")
-                self.button_Connect.configure(text="Not Connected", fg_color='orange')
-                print("ErrV2")
-                self.IsConnected = False
-                if e.errno == zmq.EAGAIN:
-                    pass  # no message was ready (yet!)
+
 
     def M2gauche(self):
         if self.IsConnected:
