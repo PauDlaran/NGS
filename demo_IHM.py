@@ -5,8 +5,9 @@ from PIL import ImageTk,Image
 import os
 import zmq
 
+
 class App(customtkinter.CTk):
-#test
+
     # Taille à l'ouverture de la fenetre
     WIDTH = 1080
     HEIGHT = 720
