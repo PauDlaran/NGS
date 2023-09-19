@@ -317,7 +317,7 @@ class App(customtkinter.CTk):
                                                          command=self.command_Fullscreen
                                                          )
         self.button_Fullscreen.grid(row=4, column=0, pady=10, padx=20)
-        #
+        #endregion
 
 
         # Affichage du panneau frame_Pilotage
