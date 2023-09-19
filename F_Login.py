@@ -1,3 +1,5 @@
+#Cette fonction permet de s'assurer de la connexion entre la rasppy et l'IHM
+
 import tkinter
 import zmq
 
