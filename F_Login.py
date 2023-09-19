@@ -19,12 +19,10 @@ class connexion_ssh() :
             self.socket.setsockopt(zmq.LINGER, 0)
             mess = self.socket.recv()
         except zmq.ZMQError as e:
-            mess = ""
-            print("ERROR : ssh not connected")
-            return bool
+            mess = "ERROR : ssh not connected"
+            #return bool
             #self.button_Connect.configure(text="Not Connected", fg_color='orange')
-            print("Err2")
-            self.IsConnected = False
+            #print("command_error = "+ command_name)
             if e.errno == zmq.EAGAIN:
                 pass  # no message was ready (yet!)
         # Message reçu de la Rpi pour s'assurer de la connection avec l'arduino
