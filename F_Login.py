@@ -1,7 +1,7 @@
 import tkinter
 import zmq
 
-class connexion_ssh(self) :
+class connexion_ssh() :
 
     def __init__(self) :
         #ConnectionSSH
