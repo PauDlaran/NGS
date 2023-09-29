@@ -7,7 +7,7 @@ buttons = [0]*11
 class TeleopNode:
     def __init__(self):
         rospy.init_node('teleop_node')
-        self.joy_sub = rospy.Subscriber('joy', Joy, self.joy_callback)
+        self.joy_sub = rospy.Subscriber('/joy', Joy, self.joy_callback)
         self.arm = MoveGroupCommander('arm')
         self.arm.set_max_velocity_scaling_factor(0.1)
 
