@@ -1,49 +1,18 @@
-#!/usr/bin/env python
-
 import rospy
-import moveit_commander
-from sensor_msgs.msg import JointState
-from std_msgs.msg import Float64MultiArray
-from geometry_msgs.msg import Pose
+from sensor_msgs.msg import Joy
+from moveit_commander import MoveGroupCommander
 
-# Initialisation de ROS
-rospy.init_node('robot_control_node')
+class TeleopNode:
+    def __init__(self):
+        rospy.init_node('joy_node') #Initialisation du noeud qui va recevoir les données du joystick
+        self.joy_sub = rospy.Subscriber('joy', Joy, self.joy_callback)# On s'abonne au topic joy qui va recevoir les données du joystick
+        self.arm = MoveGroupCommander('arm_group') # On crée un objet arm qui va nous permettre de controler le bras
+        self.arm.set_max_velocity_scaling_factor(0.1)  # On limite la vitesse du bras UTILE??
 
-# Initialisation de MoveIt
-moveit_commander.roscpp_initialize(sys.argv)
-robot = moveit_commander.RobotCommander()
-group_name = "arm_group"  # Nom du groupe cinématique dans MoveIt
-group = moveit_commander.MoveGroupCommander(group_name)
+    def joy_callback(self, joy_msg):
+        self.arm.set_joint_value_target([0, 0, 0, 0, 0])
+        self.arm.go()
 
-# Fonction pour déplacer le bras à une position prédéfinie
-def move_to_position(position_name):
-    try:
-        group.set_named_target(position_name)
-        group.go()
-    except rospy.ROSInterruptException:
-        pass
-
-# Fonction de rappel pour les commandes de la manette Logitech
-def joy_callback(data):
-    # Traitez ici les données de la manette Logitech et mappez-les aux mouvements du bras
-    # Utilisez la fonction move_to_position() pour déplacer le bras en conséquence
-
-# Abonnez-vous au topic de la manette Logitech
-rospy.Subscriber("joy_topic", Joy, joy_callback)
-
-# Publiez les angles des joints du bras pour l'IHM
-joint_state_pub = rospy.Publisher('joint_states', JointState, queue_size=10)
-
-# Boucle principale
-rate = rospy.Rate(10)  # Taux de publication
-while not rospy.is_shutdown():
-    # Obtenez l'état actuel des joints du bras
-    joint_state = JointState()
-    joint_state.header.stamp = rospy.Time.now()
-    joint_state.name = group.get_joints()
-    joint_state.position = group.get_current_joint_values()
-    
-    # Publiez l'état des joints pour l'IHM
-    joint_state_pub.publish(joint_state)
-    
-    rate.sleep()
+if __name__ == '__main__':
+    node = TeleopNode()
+    rospy.spin()
