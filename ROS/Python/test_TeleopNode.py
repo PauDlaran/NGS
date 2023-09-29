@@ -8,7 +8,7 @@ class TeleopNode:
     def __init__(self):
         rospy.init_node('teleop_node')
         self.joy_sub = rospy.Subscriber('/joy', Joy, self.joy_callback)
-        self.arm = MoveGroupCommander('arm')
+        self.arm = MoveGroupCommander('arm_group')
         self.arm.set_max_velocity_scaling_factor(0.1)
 
     def joy_callback(self, joy_msg):
@@ -25,9 +25,9 @@ class TeleopNode:
         a4 = axes[4]
         a5 = axes[5]
         # Publish arm movement commands
-        self.rospy.loginfo("\n")
-        self.rospy.loginfo("avancer/reculer: %s", a0)
-        self.rospy.loginfo("\n")
+        rospy.loginfo("\n")
+        rospy.loginfo("avancer/reculer: %s", a0)
+        rospy.loginfo("\n")
         #self.arm.set_joint_value_target(joint_positions)
         #self.arm.go()
 
