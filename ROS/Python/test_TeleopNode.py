@@ -36,7 +36,6 @@ class TeleopNode:
         AXES = [gauche_droite, avancer_reculer, monter, descendre]
         pub_axes.publish(AXES)
         # Publish arm movement commands
-        #je cherche a publier les commandes du mouvement du bras
         rospy.loginfo("\n")
         rospy.loginfo("gauche/droite: %s", gauche_droite)
         rospy.loginfo("avancer/reculer: %s", avancer_reculer)
@@ -53,3 +52,4 @@ class TeleopNode:
 if __name__ == '__main__':
     node = TeleopNode()
     rospy.spin()
+    rospy.sleep(0.1)
