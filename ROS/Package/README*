@@ -1,0 +1,11 @@
+brastuto --> export du modèle simplifié du bras, ajout des axes de rotation depuis SW. Est utilisé depuis SetupAsssistant de moveit pour générer les mouvement
+
+moveit_brastuto --> premier test d'utilisation du bras, erreur que l'on ne comprend pas avec "base_joint" qui est appelé mais pas reconnu dans l'URDF. 
+Le paramètrage de SetupAssistant est :
+- arm_group : tout sauf base et outil
+- outil_group : outil
+
+2_brastuto --> deuxième test de parametrage depuis SetupAssitant.
+Paramètrage :
+- arm_group : tout sauf outils
+- outil_group: outil

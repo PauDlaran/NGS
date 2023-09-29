@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot name="brastuto">
+    <link name="world"/>
+    <joint name="base_joint" type="fixed">
+        <parent link="world" />
+        <child link="base_link" />
+        <origin rpy="0 0 0" xyz="0.0 0.0 0.0" />
+    </joint>
+    <link name="base_link">
+        <inertial>
+            <origin xyz="3.21170037226077E-18 0 0.075" rpy="0 0 0" />
+            <mass value="10.6028752058656" />
+            <inertia ixx="0.0795215640439917" ixy="0" ixz="5.50264818312013E-34" iyy="0.0795215640439917" iyz="-2.30509329195671E-34" izz="0.119282346065988" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://brastuto/meshes/base_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://brastuto/meshes/base_link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <transmission name="base_link_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="base_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="base_link_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <gazebo reference="base_link">
+        <selfCollide>true</selfCollide>
+        <plugin name="gazebo_ros_control">
+            <robotNamespace>/</robotNamespace>
+        </plugin>
+    </gazebo>
+    <link name="planche_Link">
+        <inertial>
+            <origin xyz="4.42472000875618E-17 -1.01185997552625E-17 0.01" rpy="0 0 0" />
+            <mass value="0.8" />
+            <inertia ixx="0.00269333333333334" ixy="3.51518673110535E-19" ixz="7.95497180962851E-20" iyy="0.00269333333333334" iyz="2.97474646357115E-21" izz="0.00533333333333334" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://brastuto/meshes/planche_Link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://brastuto/meshes/planche_Link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="j_baseplanche" type="revolute">
+        <origin xyz="0 0 0.15" rpy="0 0 0.0019691" />
+        <parent link="base_link" />
+        <child link="planche_Link" />
+        <axis xyz="0 0 1" />
+        <limit lower="0" upper="3.142" effort="0" velocity="0" />
+    </joint>
+    <transmission name="planche_Link_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="j_baseplanche">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="planche_Link_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <gazebo reference="planche_Link">
+        <selfCollide>true</selfCollide>
+    </gazebo>
+    <link name="axe1_Link">
+        <inertial>
+            <origin xyz="0.029198659365422 5.14996031930615E-19 0.130098737034774" rpy="0 0 0" />
+            <mass value="0.861049766656637" />
+            <inertia ixx="0.00442443973409873" ixy="1.08101281079635E-19" ixz="-7.88536279591973E-05" iyy="0.00441920624893304" iyz="4.52011799703461E-21" izz="0.0005113963748283" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://brastuto/meshes/axe1_Link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://brastuto/meshes/axe1_Link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="j_plancheaxe1" type="revolute">
+        <origin xyz="0 0 0.02" rpy="0 0.2618 0" />
+        <parent link="planche_Link" />
+        <child link="axe1_Link" />
+        <axis xyz="0 1 0" />
+        <limit lower="-1.57" upper="1.57" effort="0" velocity="0" />
+    </joint>
+    <transmission name="axe1_Link_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="j_plancheaxe1">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="axe1_Link_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <gazebo reference="axe1_Link">
+        <selfCollide>true</selfCollide>
+    </gazebo>
+    <link name="axe2_Link">
+        <inertial>
+            <origin xyz="-0.0299999999999999 0.0299997673533926 -0.175" rpy="0 0 0" />
+            <mass value="1.26" />
+            <inertia ixx="0.0132405" ixy="1.34791848090806E-19" ixz="6.17995238316738E-18" iyy="0.0132405" iyz="1.39274165388184E-18" izz="0.000756000000000002" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://brastuto/meshes/axe2_Link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://brastuto/meshes/axe2_Link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="j_axe1axe2" type="revolute">
+        <origin xyz="0 0.03 0.25" rpy="-3.1416 1.0472 -3.1416" />
+        <parent link="axe1_Link" />
+        <child link="axe2_Link" />
+        <axis xyz="0 1 0" />
+        <limit lower="-1.57" upper="1.57" effort="0" velocity="0" />
+    </joint>
+    <transmission name="axe2_Link_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="j_axe1axe2">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="axe2_Link_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <gazebo reference="axe2_Link">
+        <selfCollide>true</selfCollide>
+    </gazebo>
+    <link name="axe3_Link">
+        <inertial>
+            <origin xyz="-0.0299999999999999 -0.0299997673533926 -0.05" rpy="0 0 0" />
+            <mass value="0.36" />
+            <inertia ixx="0.000408" ixy="1.88464830764082E-20" ixz="1.43913684980206E-19" iyy="0.000408" iyz="1.04853498295138E-20" izz="0.000216" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://brastuto/meshes/axe3_Link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://brastuto/meshes/axe3_Link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="j_axe2axe3" type="revolute">
+        <origin xyz="0 0 -0.35" rpy="-3.1416 -0.7854 3.1416" />
+        <parent link="axe2_Link" />
+        <child link="axe3_Link" />
+        <axis xyz="0 -1 0" />
+        <limit lower="-1.57" upper="3.142" effort="0" velocity="0" />
+    </joint>
+    <transmission name="axe3_Link_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="j_axe2axe3">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="axe3_Link_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <gazebo reference="axe3_Link">
+        <selfCollide>true</selfCollide>
+    </gazebo>
+    <link name="outil_Link">
+        <inertial>
+            <origin xyz="0.00233808588927528 -0.00265649043854835 -0.005" rpy="0 0 0" />
+            <mass value="0.086602540378444" />
+            <inertia ixx="6.08623408770733E-05" ixy="2.37169225231204E-20" ixz="-3.18349582326935E-22" iyy="6.08623408770732E-05" iyz="5.87220798619158E-23" izz="0.000120281306081172" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://brastuto/meshes/outil_Link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://brastuto/meshes/outil_Link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="j_outilaxe3" type="revolute">
+        <origin xyz="-0.03 -0.03 -0.1" rpy="0 0 2.2472" />
+        <parent link="axe3_Link" />
+        <child link="outil_Link" />
+        <axis xyz="0 0 -1" />
+        <limit lower="0" upper="3.142" effort="0" velocity="0" />
+    </joint>
+    <transmission name="outil_Link_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="j_outilaxe3">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="outil_Link_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <gazebo reference="outil_Link">
+        <selfCollide>true</selfCollide>
+    </gazebo>
+    <gazebo>
+        <plugin name="control" filename="libgazebo_ros_control.so">
+            <robotNamespace>/</robotNamespace>
+        </plugin>
+    </gazebo>
+</robot>
+
