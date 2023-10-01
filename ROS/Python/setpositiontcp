@@ -1,0 +1,52 @@
+#Envoi des données de position du TCP à MoveIt + matrice d'état du TCP et incrémentation
+import rospy
+from moveit_commander import MoveGroupCommander 
+from geometry_msgs.msg import Pose
+
+
+class TeleopNode:
+    def __init__(self):
+        self.g = MoveGroupCommander("arm_group")
+
+        #Initalisation de la matrice de position du TCP
+        self.Current_pose_tcp = self.g.get_current_pose()
+
+        self.pose_TCP = Pose()
+        self.pose_TCP.x = self.Current_pose_tcp.position.x
+        self.pose_TCP.y = self.Current_pose_tcp.position.y
+        self.pose_TCP.z = self.Current_pose_tcp.position.z
+        self.pose_TCP.orientation.x = self.Current_pose_tcp.orientation.x
+        self.pose_TCP.orientation.y = self.Current_pose_tcp.orientation.y
+        self.pose_TCP.orientation.z = self.Current_pose_tcp.orientation.z
+
+        self.matrix_tcp = [[self.pose_TCP.x, self.pose_TCP.y, self.pose_TCP.z],
+                           [self.pose_TCP.orientation.x, self.pose_TCP.orientation.y, self.pose_TCP.orientation.z, self.pose_TCP.orientation.w]]   
+
+        #Initialisation du publisher
+        self.pub = rospy.Publisher('/move_group/goal', Pose, queue_size=10)
+
+    def set_pose(self):
+        #Modification de la matrice de position du TCP
+        self.tcp_matrix[0][0] += data.axes[0] #Data axes est a définir avec les données d'entrée du joystick
+        self.tcp_matrix[0][1] += data.axes[1]
+        self.tcp_matrix[0][2] += data.axes[3]
+
+        #Création de la pose à partir de la matrice de position du TCP
+        pose = Pose()
+        pose.position.x = tcp_matrix[0][0]
+        pose.position.y = tcp_matrix[0][1]
+        pose.position.z = tcp_matrix[0][2]
+        pose.orientation = self.pose_TCP.orientation
+        
+        #Configuration de la pose cible dans MoveIt
+        self.g.set_pose_target(pose)
+
+        #Envoi des instructions de déplacement en publiant la pose cible sur le topic approprié
+        self.pub.publish(pose)
+
+if __name__ == '__main__':
+    node = TeleopNode()
+    rospy.spin()
+    rospy.sleep(0.1)
+
+
