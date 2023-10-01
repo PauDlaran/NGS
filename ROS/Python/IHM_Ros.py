@@ -240,7 +240,7 @@ class App(customtkinter.CTk):
         axes = [round(value,3) for value in joy_msg.axes]
         buttons = joy_msg.buttons
         
-        if axes[8] > 0
+        if axes[8] > 0:
             self.label_px.config(fg_color = ("#148f77"))
         elif axes[8] < 0:
             self.label_mx.config(fg_color = ("#148f77"))
