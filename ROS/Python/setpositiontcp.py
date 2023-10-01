@@ -9,7 +9,7 @@ class TeleopNode:
         self.g = MoveGroupCommander("arm_group")
 
         #Initialisation du noeud ROS
-        rospy.init_node('move_tcp_with_joystick')
+        rospy.init_node('setpositiontcp')
 
         #Initalisation de la matrice de position du TCP, position au mancement de moveit
         self.Current_pose_tcp = self.g.get_current_pose()
