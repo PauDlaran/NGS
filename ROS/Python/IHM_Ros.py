@@ -3,12 +3,19 @@
 
 import customtkinter
 import tkinter
+from sensor_msgs.msg import Joy
+from geometry_msgs.msg import Pose
+import rospy
+
 
 class App(customtkinter.CTk):
     WIDTH = 1080
     HEIGHT = 720
 
     def __init__(self):
+
+        self.joy_sub = rospy.Subscriber('/joy', Joy, self.chg_color) # Abonnement au topic /joy
+        self.sub = rospy.Subscriber('/move_group/goal', Pose, self.update_position) # Abonnement au topic /move_group/goal
 
         #initialisation de la fennetre
         super().__init__()
@@ -75,7 +82,7 @@ class App(customtkinter.CTk):
 
         #==== Frame_state ====
         self.frame_state = customtkinter.CTkFrame(master = self.frame_info)
-        self.frame_state.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
+        
 
         self.frame_state.columnconfigure(0, weight=1)
         self.frame_state.rowconfigure((0,1,2), weight=1)
@@ -110,28 +117,28 @@ class App(customtkinter.CTk):
         self.label_px = customtkinter.CTkLabel(master = self.frame_joystick,
                                                   text="   + X   ",
                                                   corner_radius = 3,
-                                                  fg_color = ("#d98880"),
+                                                  fg_color = ("#ec7063"),
                                                   font=("Roboto Medium", 20))
         self.label_px.grid(row=0, column=2, pady=10, padx=20)
 
         self.label_mx = customtkinter.CTkLabel(master = self.frame_joystick,
                                                   text="   - X   ",
                                                   corner_radius = 3,
-                                                  fg_color = ("#d98880"),
+                                                  fg_color = ("#ec7063"),
                                                   font=("Roboto Medium", 20))
         self.label_mx.grid(row=2, column=2, pady=10, padx=20)
 
         self.label_py = customtkinter.CTkLabel(master = self.frame_joystick,
                                                   text="   + Y   ",
                                                   corner_radius = 3,
-                                                  fg_color = ("#f98c75"),
+                                                  fg_color = ("#ec7063"),
                                                   font=("Roboto Medium", 20))
         self.label_py.grid(row=1, column=1, pady=10, padx=20)
 
         self.label_my = customtkinter.CTkLabel(master = self.frame_joystick,
                                                   text="   - Y   ",
                                                   corner_radius = 3,
-                                                  fg_color = ("#f98c75"),
+                                                  fg_color = ("#ec7063"),
                                                   font=("Roboto Medium", 20))
         self.label_my.grid(row=1, column=3, pady=10, padx=20)
 
@@ -226,16 +233,60 @@ class App(customtkinter.CTk):
                                                   
                                                   font=("Roboto Medium", 20))
         self.label__.grid(row=3, column=3, pady=10, padx=20)
+
+    def chg_color(self, joy_msg):
+        #Partie qui doit tourner en fond
+            
+        axes = [round(value,3) for value in joy_msg.axes]
+        buttons = joy_msg.buttons
+        
+        if axes[8] > 0
+            self.label_px.config(fg_color = ("#148f77"))
+        elif axes[8] < 0:
+            self.label_mx.config(fg_color = ("#148f77"))
+        elif axes[7] > 0:
+            self.label_py.config(fg_color = ("#148f77"))
+        elif axes[7] < 0:
+            self.label_my.config(fg_color = ("#148f77"))
+        elif axes[3] > 0:
+            self.label_haut.config(fg_color = ("#148f77"))
+        elif axes[6] > 0:
+            self.label_bas.config(fg_color = ("#148f77"))
+            
+        self.label_px.config(fg_color = ("#ec7063"))
+        self.label_mx.config(fg_color = ("#ec7063"))
+        self.label_py.config(fg_color = ("#ec7063"))
+        self.label_my.config(fg_color = ("#ec7063"))
+        self.label_haut.config(fg_color = ("#ec7063"))
+        self.label_bas.config(fg_color = ("#ec7063"))
+
+    def update_position(self, data):
+        #Actualisation des données de la matrice de position
+
+        #Axes
+        self.label_x.config(text = " X : " + str(round(data.position.x,3)))
+        self.label_y.config(text = " Y : " + str(round(data.position.y,3)))
+        self.label_z.config(text = " Z : " + str(round(data.position.z,3)))
+
+        #Angles
+        self.label_roll.config(text = " Roll : " + str(round(data.orientation.x,3)))
+        self.label_pitch.config(text = " Pitch : " + str(round(data.orientation.y,3)))
+        self.label_yaw.config(text = " Yaw : " + str(round(data.orientation.z,3)))
+            
+
         
 
-        def on_closing(self, event=0):
-            self.destroy()
+    def on_closing(self, event=0):
+        self.destroy()
         
-        def afficher_state(self, event=0):
-            self.frame_accueil.grid_forget()
-            self.frame_state.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
+    def afficher_state(self, event=0):
+        self.frame_accueil.grid_forget()
+        self.frame_state.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
 
 
+##### Créer les fonctions qui viznnznt remplacer le text dans les labels en suivant soit le topic que l'on a creer soit en tirant des infos de moveit
+# Créer la fonction qui alnce le .launch quand on clique sur le bouton
+# creer les fonctions qui change les coulaur des label quand le joystick est actionné acceder au topic joyaffichage de l'écrant d'acceuil
 
 
 
