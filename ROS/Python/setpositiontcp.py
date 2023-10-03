@@ -50,18 +50,20 @@ class TeleopNode:
         pose.orientation = self.pose_TCP.orientation
         
         #Configuration de la pose cible dans MoveIt
-        send_pose = self.g.set_pose_target(pose)
-
+        self.g.set_joint_value_target(pose, arg2=None, arg3=None)
+        rospy.sleep(0.1)
         #Configuration de la fréquence de publication
         rate = rospy.Rate(10) # 10hz
 
         #Envoi des instructions de déplacement en publiant la pose cible sur le topic approprié
-        self.pub.publish(send_pose)
+        self.pub.publish(pose)
 
         #Remise à zéro des incréments?
-        # self.data.axes[0] = 0
-        # self.data.axes[1] = 0
-        # self.data.axes[3] = 0
+        self.data[0] = 0
+        self.data[1] = 0
+        self.data[2] = 0
+
+
 
     #Cette fonction tourne en boucle? 
     def joy_callback(self, joy_msg):
@@ -76,31 +78,34 @@ class TeleopNode:
         
         # Utilisation des données joystick pour modifier la matrice de position du TCP
         # axes[8] = x | joystick gauche av/ar?
-        if axes[8] > 0:
+        if axes[5] > 0:
             self.data[0] = 0.1
-        elif axes[8] < 0:
+        elif axes[5] < 0:
             self.data[0] = -0.1
         else:
             self.data[0] = 0
         
         # axes[7] = y | joystick gauche d/g?
-        if axes[7] > 0:
+        if axes[4] > 0:
             self.data[1] = -0.1
-        elif axes[7] < 0:
+        elif axes[4] < 0:
             self.data[1] = 0.1
         else:
             self.data[1] = 0
         
         # axes[3] = +z | Gachette droite? A voir quelles sont les datas envoyées depuis la gachette?
-        if axes[3] > 0:
+        if axes[2] > 0:
             self.data[2] = 0.1
-        elif axes[6] > 0:
+        elif axes[2] < 0:
             self.data[2] = -0.1
         else:
             self.data[2] = 0
                 
         #Plan/execute | Bouton A
         if buttons[1] == 1:
+            rospy.loginfo(self.g.plan())
+            plan = self.g.plan()
+            
             self.g.execute(self.g.plan())
 
 if __name__ == '__main__':
