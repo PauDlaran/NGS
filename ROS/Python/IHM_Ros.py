@@ -15,6 +15,8 @@ class App(customtkinter.CTk):
 
     def __init__(self):
 
+        rospy.init_node("IHM_ROS")
+
         self.joy_msg = None
 
         global axes, buttons
