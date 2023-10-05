@@ -1,6 +1,7 @@
 # Importer les bibliothèques nécessaires
 import rospy
 import moveit_commander
+import sys #R : rajouté pour enlever l'erreur ligne 13
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Pose
 

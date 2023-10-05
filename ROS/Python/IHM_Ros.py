@@ -307,7 +307,7 @@ class App(customtkinter.CTk):
         self.frame_state.grid(row=0, column=1, pady=10, padx=20, sticky="nsew")
 
 
-##### Créer les fonctions qui viznnznt remplacer le text dans les labels en suivant soit le topic que l'on a creer soit en tirant des infos de moveit
+##### Créer les fonctions qui viennent remplacer le text dans les labels en suivant soit le topic que l'on a creer soit en tirant des infos de moveit
 # Créer la fonction qui alnce le .launch quand on clique sur le bouton
 # creer les fonctions qui change les coulaur des label quand le joystick est actionné acceder au topic joyaffichage de l'écrant d'acceuil
 

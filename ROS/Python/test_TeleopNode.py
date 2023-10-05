@@ -12,9 +12,9 @@ class TeleopNode:
         self.arm = MoveGroupCommander('arm_group')
         self.arm.set_max_velocity_scaling_factor(0.1)
         global pub_buttons
-        pub_buttons = rospy.Publisher("topic_name", list, queue_size=10)
+        pub_buttons = rospy.Publisher("/goal", list, queue_size=10)
         global pub_axes
-        pub_axes = rospy.Publisher("topic_name", list, queue_size=10)
+        pub_axes = rospy.Publisher("/goal", list, queue_size=10)
 
     def joy_callback(self, joy_msg):
         # Map joystick inputs to arm movements
@@ -52,4 +52,4 @@ class TeleopNode:
 if __name__ == '__main__':
     node = TeleopNode()
     rospy.spin()
-    rospy.sleep(0.1)
+

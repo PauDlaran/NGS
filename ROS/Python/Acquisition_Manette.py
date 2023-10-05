@@ -11,7 +11,7 @@ buttons = [0]*11
 
 class TeleopNode:
     def __init__(self):
-        rospy.init_node('teleop_node') # Pas sur de comprendre a quoi sert cette ligne
+        rospy.init_node('teleop_node') # Pas sur de comprendre a quoi sert cette ligne : donne un nom au node créé (dans le fichier xml)
         self.joy_sub = rospy.Subscriber('/joy', Joy, self.joy_callback) # Abonnement au topic /joy
 
 
