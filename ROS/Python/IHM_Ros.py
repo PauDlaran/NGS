@@ -6,7 +6,6 @@ import tkinter
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Pose
 import rospy
-import threading
 
 
 class App(customtkinter.CTk):
@@ -15,20 +14,6 @@ class App(customtkinter.CTk):
 
     def __init__(self):
 
-        rospy.init_node("IHM_ROS")
-
-        self.joy_msg = None
-
-        global axes, buttons
-
-
-        self.joy_thread = threading.Thread(target=self.chg_color)
-        self.joy_thread.daemon = True  # Le thread s'arrêtera lorsque le programme principal se terminera
-        self.joy_thread.start()
-
-
-        customtkinter.set_appearance_mode("Dark")
-
         self.joy_sub = rospy.Subscriber('/joy', Joy, self.chg_color) # Abonnement au topic /joy
         self.sub = rospy.Subscriber('/move_group/goal', Pose, self.update_position) # Abonnement au topic /move_group/goal
 
@@ -36,7 +21,7 @@ class App(customtkinter.CTk):
         super().__init__()
         self.title("INFORMATION BRAS | PROJET ROS")
         #self.geometry(f"{self.WIDTH}x{self.HEIGHT}")
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        #self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         #grid dans la fenetre
         self.grid_columnconfigure(1, weight=1)
@@ -78,7 +63,7 @@ class App(customtkinter.CTk):
         self.bouton_state = customtkinter.CTkButton(master = self.frame_choix,
                                                     text="Affichage",
                                                     fg_color=("gray75", "gray30"),
-                                                    command=self.afficher_state
+                                                    #command=self.afficher_state
                                                     )
         self.bouton_state.grid(row=3, column=0, pady=10, padx=20)
 
@@ -98,6 +83,7 @@ class App(customtkinter.CTk):
         #==== Frame_state ====
         self.frame_state = customtkinter.CTkFrame(master = self.frame_info)
         
+
         self.frame_state.columnconfigure(0, weight=1)
         self.frame_state.rowconfigure((0,1,2), weight=1)
 
@@ -248,40 +234,31 @@ class App(customtkinter.CTk):
                                                   font=("Roboto Medium", 20))
         self.label__.grid(row=3, column=3, pady=10, padx=20)
 
-    def chg_color(self):
-        def color_loop():
-            while True:
-                if self.joy_msg is not None:
-                    joy_msg = self.joy_msg
-                    axes = [round(value,3) for value in joy_msg.axes]
-                    buttons = joy_msg.buttons
-    
+    def chg_color(self, joy_msg):
+        #Partie qui doit tourner en fond
             
-                #Partie qui doit tourner en fond
-
-                    if axes[5] > 0:
-                        self.label_px.config(fg_color = ("#148f77"))
-                    elif axes[5] < 0:
-                        self.label_mx.config(fg_color = ("#148f77"))
-                    elif axes[4] > 0:
-                        self.label_py.config(fg_color = ("#148f77"))
-                    elif axes[4] < 0:
-                        self.label_my.config(fg_color = ("#148f77"))
-                    elif axes[1] > 0:
-                        self.label_haut.config(fg_color = ("#148f77"))
-                    elif axes[1] > 0:
-                        self.label_bas.config(fg_color = ("#148f77"))
-                        
-                    # self.label_px.config(fg_color = ("#ec7063"))
-                    # self.label_mx.config(fg_color = ("#ec7063"))
-                    # self.label_py.config(fg_color = ("#ec7063"))
-                    # self.label_my.config(fg_color = ("#ec7063"))
-                    # self.label_haut.config(fg_color = ("#ec7063"))
-                    # self.label_bas.config(fg_color = ("#ec7063"))
-
-        color_thread = threading.Thread(target=color_loop)
-        color_thread.daemon = True
-        color_thread.start()
+        axes = [round(value,3) for value in joy_msg.axes]
+        buttons = joy_msg.buttons
+        
+        if axes[8] > 0:
+            self.label_px.config(fg_color = ("#148f77")) 
+        elif axes[8] < 0:
+            self.label_mx.config(fg_color = ("#148f77"))
+        elif axes[7] > 0:
+            self.label_py.config(fg_color = ("#148f77"))
+        elif axes[7] < 0:
+            self.label_my.config(fg_color = ("#148f77"))
+        elif axes[3] > 0:
+            self.label_haut.config(fg_color = ("#148f77"))
+        elif axes[6] > 0:
+            self.label_bas.config(fg_color = ("#148f77"))
+            
+        self.label_px.config(fg_color = ("#ec7063"))
+        self.label_mx.config(fg_color = ("#ec7063"))
+        self.label_py.config(fg_color = ("#ec7063"))
+        self.label_my.config(fg_color = ("#ec7063"))
+        self.label_haut.config(fg_color = ("#ec7063"))
+        self.label_bas.config(fg_color = ("#ec7063"))
 
     def update_position(self, data):
         #Actualisation des données de la matrice de position
@@ -299,12 +276,12 @@ class App(customtkinter.CTk):
 
         
 
-    def on_closing(self):
+    def on_closing(self, event=0):
         self.destroy()
         
-    def afficher_state(self):
+    def afficher_state(self, event=0):
         self.frame_accueil.grid_forget()
-        self.frame_state.grid(row=0, column=1, pady=10, padx=20, sticky="nsew")
+        self.frame_state.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
 
 
 ##### Créer les fonctions qui viennent remplacer le text dans les labels en suivant soit le topic que l'on a creer soit en tirant des infos de moveit
@@ -315,5 +292,4 @@ class App(customtkinter.CTk):
 
 if __name__ == "__main__":
     app = App()
-    
     app.mainloop()
