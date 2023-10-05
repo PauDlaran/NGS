@@ -16,9 +16,6 @@ class TeleopNode:
         #self.Current_pose_tcp = self.g.get_current_pose()
 
         self.pose_TCP = Pose()
-
-    
-
         self.pose_TCP.position.x = self.g.get_current_pose().pose.position.x
         self.pose_TCP.position.y = self.g.get_current_pose().pose.position.y
         self.pose_TCP.position.z = self.g.get_current_pose().pose.position.z
@@ -27,8 +24,8 @@ class TeleopNode:
         self.pose_TCP.orientation.z = self.g.get_current_pose().pose.orientation.z
 
         self.matrix_tcp = [[self.pose_TCP.position.x, self.pose_TCP.position.y, self.pose_TCP.position.z],
-                           [self.pose_TCP.orientation.x, self.pose_TCP.orientation.y, self.pose_TCP.orientation.z, self.pose_TCP.orientation.w]]   
-
+                           [self.pose_TCP.orientation.x, self.pose_TCP.orientation.y, self.pose_TCP.orientation.z, self.pose_TCP.orientation.w]]
+        
         global data
         self.data = [0, 0, 0]
 
@@ -41,7 +38,6 @@ class TeleopNode:
     #Définir la position du TCP par la modification de la matrice d'état
     def set_pose(self):
         #Modification de la matrice de position du TCP
-
         self.matrix_tcp[0][0] += self.data[0] #Data.axes est a définir avec les données d'entrée du joystick
         self.matrix_tcp[0][1] += self.data[1]
         self.matrix_tcp[0][2] += self.data[2]
@@ -54,10 +50,8 @@ class TeleopNode:
         pose.orientation = self.pose_TCP.orientation
         
         #Configuration de la pose cible dans MoveIt
-
         self.g.set_joint_value_target(pose, arg2=None, arg3=None)
         rospy.sleep(0.1)
-
         #Configuration de la fréquence de publication
         rate = rospy.Rate(10) # 10hz
 
