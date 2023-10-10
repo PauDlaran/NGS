@@ -1,4 +1,4 @@
-# Réalisation d'une interface graphique pour le projet ROS. Ici on utilisera la librairie customTkinter
+    # Réalisation d'une interface graphique pour le projet ROS. Ici on utilisera la librairie customTkinter
 # L'IHM permettra de lancer le programme ros ainsi que les différents noeuds et nous visualiserons les modifications de la matrice d'état du TCP ainsi que les commandes issue du joystick
 
 import customtkinter
@@ -546,11 +546,15 @@ class App(customtkinter.CTk):
         label_widget = Label(Tk) 
         label_widget.pack() 
         # Capture the video frame by frame 
-        _, frame = cap.read() 
-    
+        while(True):
+            _, frame = cap.read() 
+            cv2.imshow('frame', frame) 
         # Convert image from one color space to other 
-        opencv_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA) 
-    
+            opencv_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA) 
+        
+        cap.release()
+
+        """
         # Capture the latest frame and transform to image 
         captured_image = Image.fromarray(opencv_image) 
     
@@ -566,7 +570,8 @@ class App(customtkinter.CTk):
         # Repeat the same process after every 10 seconds 
         label_widget.after(1, open_camera) 
 
-        Tk.mainloop()
+        Tk.mainloop()"""
+        
 
 ##### Créer les fonctions qui viennent remplacer le text dans les labels en suivant soit le topic que l'on a creer soit en tirant des infos de moveit
 # Créer la fonction qui alnce le .launch quand on clique sur le bouton
