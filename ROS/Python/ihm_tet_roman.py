@@ -10,6 +10,8 @@ import threading
 import multiprocessing
 from reportlab.pdfgen import canvas
 
+
+
 class App(customtkinter.CTk):
     WIDTH = 1080
     HEIGHT = 720
@@ -30,7 +32,6 @@ class App(customtkinter.CTk):
         self.grid_rowconfigure(0, weight=1)
 
         self.photo = None
-
         #self.frames = ["frame_accueil", "frame_ssh", "frame_affichage", "frame_reglage", "frame_traçabilite"]
         self.x = 0
         self.y = 0
@@ -251,13 +252,10 @@ class App(customtkinter.CTk):
         self.frame_cam = customtkinter.CTkFrame(master = self.frame_commandes, corner_radius=0)
         self.frame_cam.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
 
-
-        self.button_open_camera = customtkinter.CTkButton(master = self.frame_commandes, text="Open Camera", 
-                                               corner_radius = 0,
-                                               fg_color = ("black"),
-                                               command=self.open_camera) 
-        self.button_open_camera.bind("button_open_camera", self.open_camera) 
-        self.button_open_camera.grid(row=5, column=1, pady=10, padx=20)
+        self.WC = cv2.VideoCapture(0)
+        self.bouton_camera = customtkinter.CTkButton(master = self.frame_commandes, text="Camera",corner_radius = 0,
+                                               fg_color = ("black"), command=self.get_frame)
+        self.bouton_camera.grid(row=5, column=1, pady=10, padx=20)
         self.num_photo = 0
         self.bouton_photo = customtkinter.CTkButton(master = self.frame_commandes, text="Photo", 
                                                corner_radius = 0,
@@ -630,6 +628,24 @@ class App(customtkinter.CTk):
                                                command= self.afficher_tracabilite)
         self.bouton_traçabilite_3.grid(row=2, column=0, pady=10, padx=20)
 
+    def get_frame(self):
+        while True:
+            # this will read images/frames one by one
+            RET, F = self.WC.read()
+            cv2.imshow("Live Feeds", F)
+            KEY = cv2.waitKey(1)  # wait for key press
+            if KEY == ord("q"):
+                break
+            
+        self.WC.release()
+        cv2.destroyAllWindows() 
+
+        def close_window():
+            cv2.destroyAllWindows()
+
+        # Définir la fonction de rappel pour la fermeture de la fenêtre
+        cv2.setMouseCallback("Live Feeds", close_window)
+    
     def on_closing(self, event=0):
         self.destroy()
         
@@ -947,7 +963,8 @@ class App(customtkinter.CTk):
 
     def aperçu_photo(self, event=0):
         cv2.imshow('frame', self.photo) #TODO:montre que la dernière photo prise, voir comment lier chaque prélèvement a sa photo, pour les mettre dans le bon rapport
-    
+
+       
 ##### Créer les fonctions qui viennent remplacer le text dans les labels en suivant soit le topic que l'on a creer soit en tirant des infos de moveit
 # Créer la fonction qui alnce le .launch quand on clique sur le bouton
 
