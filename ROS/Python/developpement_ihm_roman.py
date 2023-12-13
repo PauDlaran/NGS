@@ -3,6 +3,8 @@
 import customtkinter
 from tkinter import *
 import cv2 
+from tkinter import filedialog
+from tkinter.messagebox import showinfo
 import tkinter as tk
 import threading
 from reportlab.pdfgen import canvas
@@ -12,8 +14,9 @@ import pyautogui
 from caméra import Camera
 import pygetwindow as gw
 import pyautogui
-import tabula
-import pandas as pd
+from tabula import read_pdf
+import os
+
 
 hostname = "192.168.9.101" #tib : 192.168.86.101
 port = "5555"
@@ -28,7 +31,8 @@ class App(customtkinter.CTk):
         
         #initialisation connexion raspi
         self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.REQ)
+        self.socket_command = self.context.socket(zmq.REQ)
+        self.socket_video = self.context.socket(zmq.REQ)
         
         #initialisation de la fennetre
         super().__init__()
@@ -334,13 +338,15 @@ class App(customtkinter.CTk):
                                                   fg_color = ("black"),
                                                   font=("Roboto Medium", 20))
         self.button_axe3.grid(row=4, column=2, pady=10, padx=20)
-
+        self.n_prelev = customtkinter.CTkOptionMenu(self.frame_commandes, fg_color= "black", button_color= "black", values=["choix du prelevement", "1", "2", "3"],
+                                         corner_radius=0)
+        self.n_prelev.grid(row=5, column=1, pady=10, padx=20)
         self.frame_cam = customtkinter.CTkFrame(master = self.frame_commandes, corner_radius=0)
         self.frame_cam.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
         self.cam_label = tk.Label(self.frame_cam)
         self.cam_label.pack()
-        self.WC = cv2.VideoCapture(0) #TODO voir si utile
-        self.bouton_camera = customtkinter.CTkSwitch(master = self.frame_commandes, text="Camera", corner_radius = 0, fg_color = ("black"), progress_color=("green"), command=lambda : Camera.start_camera(self))
+        self.camera = Camera()
+        self.bouton_camera = customtkinter.CTkSwitch(master = self.frame_commandes, text="Camera", corner_radius = 0, fg_color = ("black"), progress_color=("green"), command=lambda : self.camera.camera(self.socket_video))
         self.bouton_camera.grid(row=6, column=1, pady=10, padx=20)
         self.num_photo = 0
         self.n_cam = customtkinter.CTkOptionMenu(self.frame_commandes, fg_color= "black", button_color= "black", values=["choix d'une camera", "1", "2", "3", "4"],
@@ -506,15 +512,17 @@ class App(customtkinter.CTk):
                                                   font=("Roboto Medium", 20))
         self.entry_heure.grid(row=5, column=1, pady=10, padx=20)
 
-        self.label_n_photo = customtkinter.CTkLabel(master = self.frame_traçabilite, 
-                                                    text="Numéro de photo :", 
+        self.label_choix_photo = customtkinter.CTkLabel(master = self.frame_traçabilite, 
+                                                    text="Choix de la photo :", 
                                                     corner_radius = 0,
                                                     font=("Roboto Medium", 20)) 
-        self.label_n_photo.grid(row=6, column=0, pady=10, padx=20)
+        self.label_choix_photo.grid(row=6, column=0, pady=10, padx=20)
 
-        self.n_photo = customtkinter.CTkEntry(master = self.frame_traçabilite,
-                                                  font=("Roboto Medium", 20))
-        self.n_photo.grid(row=6, column=1, pady=10, padx=20)
+        self.dossier_photo = customtkinter.CTkButton(master = self.frame_traçabilite, text="Dossier photo",
+                                                  corner_radius = 0,
+                                                  fg_color = ("black"),    
+                                                  command= self.dossier_photo)
+        self.dossier_photo.grid(row=6, column=1, pady=10, padx=20)
 
         self.bouton_aperçu_photo = customtkinter.CTkButton(master = self.frame_traçabilite, text="Aperçu photo", 
                                                corner_radius = 0,
@@ -549,12 +557,6 @@ class App(customtkinter.CTk):
                                                fg_color = ("black"),
                                                command= self.extraction_csv) 
         self.bouton_csv.grid(row=9, column=2, pady=10, padx=20)
-
-        self.bouton_aperçu_final = customtkinter.CTkButton(master = self.frame_traçabilite, width= 280, text="Aperçu final", 
-                                               corner_radius = 0,
-                                               fg_color = ("black"),
-                                               command= self.aperçu_final) 
-        self.bouton_aperçu_final.grid(row=10, column=1, pady=10, padx=20)
 
         self.bouton_exporter = customtkinter.CTkButton(master = self.frame_traçabilite, width= 280, text="EXPORTER", 
                                                corner_radius = 0,
@@ -846,8 +848,8 @@ class App(customtkinter.CTk):
         self.frame_stockage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
 
     def LEDS_on_off(self, event=0):
-        self.socket.send(b"LEDS")
-        message = self.socket.recv()
+        self.socket_command.send(b"LEDS")
+        message = self.socket_command.recv()
         print(message.decode())
 
         #TODO : changer le texte du label en fonction de la réponse de la raspberry
@@ -857,8 +859,8 @@ class App(customtkinter.CTk):
             self.label_LEDS.configure(fg_color = ("red"))
 
     def cam_on_off(self, event=0):
-        self.socket.send(b"Info camera")
-        message = self.socket.recv()
+        self.socket_command.send(b"Info camera")
+        message = self.socket_command.recv()
         print(message.decode())
 
         #TODO : changer le texte du label en fonction de la réponse de la raspberry
@@ -868,45 +870,45 @@ class App(customtkinter.CTk):
             self.label_camera.configure(fg_color = ("red"))
 
     def sysmap_up(self, event=0):
-        self.socket.send(b"Monte 10")
-        message = self.socket.recv()
+        self.socket_command.send(b"Monte 10")
+        message = self.socket_command.recv()
         print(message.decode())
     
     def sysmap_down(self, event=0):
-        self.socket.send(b"Descends 10")
-        message = self.socket.recv()
+        self.socket_command.send(b"Descends 10")
+        message = self.socket_command.recv()
         print(message.decode())
 
     def sysmap_forward(self, event=0):
-        self.socket.send(b"Avance 10")
-        message = self.socket.recv()
+        self.socket_command.send(b"Avance 10")
+        message = self.socket_command.recv()
         print(message.decode())
 
     def sysmap_backward(self, event=0):
-        self.socket.send(b"Recule 10")
-        message = self.socket.recv()
+        self.socket_command.send(b"Recule 10")
+        message = self.socket_command.recv()
         print(message.decode())
 
     def sysmap_right(self, event=0):
-        self.socket.send(b"Droite 10")
-        message = self.socket.recv()
+        self.socket_command.send(b"Droite 10")
+        message = self.socket_command.recv()
         print(message.decode())
 
     def sysmap_left(self, event=0):
-        self.socket.send(b"Gauche 10")
-        message = self.socket.recv()
+        self.socket_command.send(b"Gauche 10")
+        message = self.socket_command.recv()
         print(message.decode())
     
     def go_to_pose(self, event=0):
         text = "Go to " + str(self.choix_poses.get())
-        self.socket.send(text.encode())
-        message = self.socket.recv()
+        self.socket_command.send(text.encode())
+        message = self.socket_command.recv()
         print(message.decode())
 
     def set_vitesse(self, event=0):
         text = "Vitesse " +str(self.choix_vitesse.get())
-        self.socket.send(text.encode())
-        message = self.socket.recv()
+        self.socket_command.send(text.encode())
+        message = self.socket_command.recv()
         print(message.decode())
 
     nom_image = []
@@ -919,61 +921,21 @@ class App(customtkinter.CTk):
         screenshot = pyautogui.screenshot(region=(stream_window.left, stream_window.top, stream_window.width, stream_window.height))
 
         # Enregistrer l'image sur l'ordinateur
-        screenshot.save('C:/Users/roman/OneDrive/Bureau/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
-        self.nom_image.append('C:/Users/roman/OneDrive/Bureau/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
+        screenshot.save('C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
+        self.nom_image.append('C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
         self.num_photo+=1 
-        print("Capture de la fenêtre réalisée et enregistrée sous le nom 'capture_window.png'.")
-        """self.socket.send(b"Prends photo")
-        message = self.socket.recv()
-        print(message.decode())
-
-        def process():
-            command = "ok"
-
-        thread = threading.Thread(target=process)
-        thread.start()
-        size = (90, 90)
-        result = cv2.VideoWriter('Photo_Sysm@p.avi', 
-                         cv2.VideoWriter_fourcc(*'MJPG'),
-                         10, size)
-        cap = cv2.VideoCapture(0)
-
-        while(True):
-            ret, frame = cap.read()
-            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2BGRA)
-            cv2.imshow('frame', rgb)
-            self.num_photo+=1 
-            self.nom_image = 'C:/Users/roman/OneDrive/Bureau/Photo_Sysm@p_'+str(self.num_photo)+'.jpg'
-            out = cv2.imwrite(self.nom_image, frame)
-            result.write(frame)
-            self.photo.append(frame)
-            fichierImage = cv2.imread(self.nom_image)
-            tailleImage = str(os.path.getsize(self.nom_image))
-            context = zmq.Context()
-            socket = context.socket(zmq.PAIR)
-            sender = imagezmq.ImageSender(connect_to='tcp://'+self.entry_adresse_ip.get()+':9999')
-            tailleImage = "Taille_0"+ tailleImage
-            self.socket.send(tailleImage.encode())
-            message = self.socket.recv()
-            print(message)
-            sender.send_image("eh hop l'image", fichierImage)
-            message = self.socket.recv()
-            print(message)
-            break
-
-        cap.release()
-        cv2.destroyAllWindows()"""
+        print("Capture de la fenêtre réalisée et enregistrée sous le nom 'Photo_Sysm@p_"+str(self.num_photo)+".jpg'")
    
     def ouvre_ferme_pince(self, etat_pince, event=0):
         if etat_pince == 0:
             self.etat_pince = 1
-            self.socket.send(b"Ouvre pince")
-            message = self.socket.recv()
+            self.socket_command.send(b"Ouvre pince")
+            message = self.socket_command.recv()
             print(message.decode())
         elif etat_pince == 1:
             self.etat_pince = 0
-            self.socket.send(b"Ferme pince")
-            message = self.socket.recv()
+            self.socket_command.send(b"Ferme pince")
+            message = self.socket_command.recv()
             print(message.decode())
 
     Type_extract = None
@@ -1029,44 +991,60 @@ class App(customtkinter.CTk):
         paragraphe1commentaire = "Commentaire : " + self.entrée_commentaire.get()
         pdf.drawString(75, 570, paragraphe1commentaire)
 
-        pdf.save()
-
         if self.Type_extract == "pdf":
             if self.photo is not None: 
-                pdf.drawImage(self.nom_image[str(self.n_photo.get())-1], 150, 230, width=300, height=300)
+                dist_up = 430
+                for i in os.listdir(self.filename):
+                    img_path = os.path.join(self.filename, i)
+                    img = cv2.imread(img_path)
+                    pdf.drawImage(img_path, 150, dist_up, width=100, height=100)
+                    dist_up -= 100
             pdf.save()
             print("pdf saved")
 
         if self.Type_extract == "csv":
+            pdf.save()
             csv_path = "C:/Users/roman/Documents/Rapports Sysm@p/Rapport du prélèvement n°"+str(self.entry_numéro_prelevement.get())+ " de la mission " + self.entry_numéro_mission.get() + ".csv"
-            df = tabula.read_pdf(pdf_path, pages='all')
+            df = read_pdf(pdf_path, pages='all')
             df.to_csv(csv_path, index=False)
             print("csv saved")
 
+    def dossier_photo(self, event=0):
+        self.filename = filedialog.askdirectory(
+                    title='Open a directory',
+                    initialdir='C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/',
+                    )
+    
     def aperçu_photo(self, event=0):
-        cv2.imshow('frame', self.photo[int(self.n_photo.get())-1]) 
+        for i in os.listdir(self.filename):
+            img_path = os.path.join(self.filename, i)
+            img = cv2.imread(img_path)
+            cv2.imshow('frame'+i, img)
     
     connexion = "Non connecté"
     color = "red"
 
     def connexion_ssh(self, event=0):
-        self.socket.connect('tcp://'+self.entry_adresse_ip.get()+':'+self.entry_adresse_port.get()) 
-        self.socket.send(b"Salut Paul")
-        message = self.socket.recv()
+        self.socket_command.connect('tcp://'+self.entry_adresse_ip.get()+':'+self.entry_adresse_port.get()) 
+        self.socket_video.connect('tcp://'+self.entry_adresse_ip.get()+':5556') 
+        self.socket_command.send(b"Salut Paul")
+        message = self.socket_command.recv()
         print(message.decode())
         if message.decode() == "Salut Roman":
             self.connexion = "Connecté"
             self.color = "green"
 
-        #TODO : a tester 
-        if self.socket.recv() == -1:
+        #TODO : marche pas
+        """if self.socket_command.recv() == -1:
             self.connexion = "Déconnecté"
             self.color = "red"
+            """
         
         self.label_connexion_state.configure(text=self.connexion, text_color=self.color)
 
 if __name__ == '__main__':
     app = App()
     app.mainloop()
-    #sos.close()
+
+
 
