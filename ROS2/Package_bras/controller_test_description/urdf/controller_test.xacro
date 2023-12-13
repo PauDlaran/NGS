@@ -1,0 +1,56 @@
+<?xml version="1.0" ?>
+<robot name="controller_test" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:include filename="$(find controller_test_description)/urdf/materials.xacro" />
+<xacro:include filename="$(find controller_test_description)/urdf/controller_test.trans" />
+<xacro:include filename="$(find controller_test_description)/urdf/controller_test.gazebo" />
+<link name="base_link">
+  <inertial>
+    <origin xyz="0.019999999999999997 2.1997332847243283e-06 0.24707295239367036" rpy="0 0 0"/>
+    <mass value="11.62703098601592"/>
+    <inertia ixx="0.239831" iyy="0.24087" izz="0.005938" ixy="-0.0" iyz="-6e-06" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find controller_test_description)/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find controller_test_description)/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link_helice_1">
+  <inertial>
+    <origin xyz="0.024999999999999994 1.5052039197550036e-07 0.0" rpy="0 0 0"/>
+    <mass value="6.7887985701347455"/>
+    <inertia ixx="0.019516" iyy="0.011172" izz="0.011172" ixy="0.0" iyz="0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.05 0.000173 -0.48" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find controller_test_description)/meshes/link_helice_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.05 0.000173 -0.48" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find controller_test_description)/meshes/link_helice_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<joint name="Revolute 1" type="continuous">
+  <origin xyz="0.05 -0.000173 0.48" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="link_helice_1"/>
+  <axis xyz="-1.0 0.0 0.0"/>
+</joint>
+
+</robot>
