@@ -1,0 +1,5 @@
+import os
+
+os.system('python3 test_code_receiver.py')
+
+os.system('python3 test_code_video.py')

@@ -1,0 +1,56 @@
+import time
+import zmq
+import imagezmq
+import cv2
+context = zmq.Context()
+socket = context.socket(zmq.REP)
+socket.bind("tcp://*:5555")
+
+while True :
+    
+    message = socket.recv()
+
+    #time.sleep(0.00001)
+    
+    if message.decode() == "Salut Paul" :
+        socket.send(b"Salut Roman")
+
+    if message.decode().startswith("Avance") :
+        x = message.decode().split(" ")[-1]
+        text = "J'avance de " +str(x)
+        socket.send(text.encode())
+    if message.decode().startswith("Monte") :
+        x = message.decode().split(" ")[-1]
+        text = "Je monte de " +str(x)
+        socket.send(text.encode())
+    if message.decode().startswith("Descends") :
+        x = message.decode().split(" ")[-1]
+        text = "Je descends de " +str(x)
+        socket.send(text.encode())
+    if message.decode().startswith("Recule") :
+        x = message.decode().split(" ")[-1]
+        text = "Je recule de " +str(x)
+        socket.send(text.encode())
+    if message.decode().startswith("Droite") :
+        x = message.decode().split(" ")[-1]
+        text = "Je tourne à droite de " +str(x)
+        socket.send(text.encode())
+    if message.decode().startswith("Gauche") :
+        x = message.decode().split(" ")[-1]
+        text = "Je tourne à gauche de " +str(x)
+        socket.send(text.encode())
+    if message.decode().startswith("Go to") :
+        x = message.decode().split(" ")[-1]
+        text = "Je vais à la position " +str(x)
+        socket.send(text.encode())
+    if message.decode().startswith("Vitesse") :
+        x = message.decode().split(" ")[-1]
+        text = "La vitesse est à " +str(x)
+        socket.send(text.encode())
+
+    
+    
+
+        
+    
+                            
