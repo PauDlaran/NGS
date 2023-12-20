@@ -20,14 +20,14 @@ from tabula import convert_into
 from tabula.io import read_pdf
 import os
 
-class IHM_NGS(customtkinter.CTk, Node):
+class IHM_NGS(customtkinter.CTk):
     WIDTH = 1080
     HEIGHT = 720
 
     def __init__(self):
         
         #création publisher
-        self.publisher = self.create_publisher(String, 'IHM_NGS', 10)
+        self.publisher = Node.create_publisher(String, 'IHM_NGS', 10)
 
         #initialisation connexion raspi
         self.context = zmq.Context()
