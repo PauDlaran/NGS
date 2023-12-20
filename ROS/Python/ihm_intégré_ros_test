@@ -20,14 +20,15 @@ from tabula import convert_into
 from tabula.io import read_pdf
 import os
 
-class IHM_NGS(customtkinter.CTk):
+class IHM_NGS(customtkinter.CTk, Node):
     WIDTH = 1080
     HEIGHT = 720
 
     def __init__(self):
-        
+        self.window = customtkinter.CTk()
+        super().__init__('ihm_ngs')
         #création publisher
-        self.publisher = Node.create_publisher(String, 'IHM_NGS', 10)
+        self.publisher = self.create_publisher(String, 'IHM_NGS', 10)
 
         #initialisation connexion raspi
         self.context = zmq.Context()
@@ -1068,8 +1069,10 @@ class IHM_NGS(customtkinter.CTk):
 def main(args=None):
     rclpy.init(args=args)
     my_ihm = IHM_NGS()
-    rclpy.spin(my_ihm)
+    while my_ihm.window.winfo_exists() :
+        rclpy.spin_once(my_ihm)
     my_ihm.destroy_node()
+    my_ihm.window.destroy()
     rclpy.shutdown()
 
 if __name__ == '__main__':
