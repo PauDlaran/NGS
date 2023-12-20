@@ -16,12 +16,11 @@ import pyautogui
 from caméra import Camera
 from check_connection_ssh import ssh_connect
 import pygetwindow as gw
-import pyautogui
 from tabula import convert_into
 from tabula.io import read_pdf
 import os
 
-class IHM_NGS(customtkinter.CTk):#, Node):
+class IHM_NGS(customtkinter.CTk, Node):
     WIDTH = 1080
     HEIGHT = 720
 
