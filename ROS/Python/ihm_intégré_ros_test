@@ -7,17 +7,17 @@ from tkinter import *
 import cv2 
 from tkinter import filedialog
 from tkinter.messagebox import showinfo
-import tkinter as tk
+#import tkinter as tk
 import threading
 from reportlab.pdfgen import canvas
 import zmq
 import zmq.ssh
 import pyautogui 
 from caméra import Camera
-from check_connection_ssh import ssh_connect
+#from check_connection_ssh import ssh_connect
 import pygetwindow as gw
-from tabula import convert_into
-from tabula.io import read_pdf
+#from tabula import convert_into
+#from tabula.io import read_pdf
 import os
 
 class IHM_NGS(customtkinter.CTk, Node):
@@ -1057,14 +1057,6 @@ class IHM_NGS(customtkinter.CTk, Node):
             self.connexion = "Connecté"
             self.color = "green"
         self.label_connexion_state.configure(text=self.connexion, text_color=self.color)
-        #TODO : à tester
-        """self.ssh_connect = ssh_connect()
-        while True :
-            if self.ssh_connect.start_connection(self.entry_adresse_ip.get()) == False :
-                self.connexion = "Non connecté"
-                self.color = "red"
-                self.label_connexion_state.configure(text=self.connexion, text_color=self.color)
-                break"""
         
 def main(args=None):
     rclpy.init(args=args)
