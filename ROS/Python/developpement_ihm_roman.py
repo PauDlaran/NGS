@@ -1113,7 +1113,6 @@ class App(customtkinter.CTk):
         if self.Type_extract == "csv":
             pdf.save()
             csv_path = "C:/Users/roman/Documents/Rapports Sysm@p/Rapport du prélèvement n°"+str(self.entry_numéro_prelevement.get())+ " de la mission " + self.entry_numéro_mission.get() + ".csv"
-            #df = read_pdf(pdf_path, pages='all')[0]
             with pdfplumber.open(pdf_path) as pdf:
                 pages = pdf.pages
                 for page in pages:
