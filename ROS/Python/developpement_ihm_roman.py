@@ -12,13 +12,19 @@ import zmq
 import zmq.ssh
 import pyautogui 
 from caméra import Camera
+from check_connection_ssh import ssh_connect
 import pygetwindow as gw
 import pyautogui
-from tabula import read_pdf
+import pdfplumber
+import csv
+from tabula import convert_into
+from tabula.io import read_pdf
 import os
+import qrcode
+from PIL import Image
 
 
-hostname = "192.168.9.101" #tib : 192.168.86.101
+hostname = "192.168.9.101" #tib : 192.168.80.101
 port = "5555"
 username = "votre_nom_d_utilisateur"
 password = "votre_mot_de_passe"
@@ -32,8 +38,8 @@ class App(customtkinter.CTk):
         #initialisation connexion raspi
         self.context = zmq.Context()
         self.socket_command = self.context.socket(zmq.REQ)
-        self.socket_video = self.context.socket(zmq.REQ)
-        
+        self.socket_video_1 = self.context.socket(zmq.REQ)
+        self.socket_video_2 = self.context.socket(zmq.REQ)
         #initialisation de la fennetre
         super().__init__()
         self.title("INFORMATION BRAS | PROJET ROS")
@@ -43,6 +49,8 @@ class App(customtkinter.CTk):
         self.grid_rowconfigure(0, weight=1)
 
         self.photo = []
+        self.cameras = []
+        self.cam_labels = []
         self.x = 0
         self.y = 0
         self.z = 0
@@ -341,28 +349,31 @@ class App(customtkinter.CTk):
         self.n_prelev = customtkinter.CTkOptionMenu(self.frame_commandes, fg_color= "black", button_color= "black", values=["choix du prelevement", "1", "2", "3"],
                                          corner_radius=0)
         self.n_prelev.grid(row=5, column=1, pady=10, padx=20)
-        self.frame_cam = customtkinter.CTkFrame(master = self.frame_commandes, corner_radius=0)
-        self.frame_cam.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
-        self.cam_label = tk.Label(self.frame_cam)
-        self.cam_label.pack()
-        self.camera = Camera()
-        self.bouton_camera = customtkinter.CTkSwitch(master = self.frame_commandes, text="Camera", corner_radius = 0, fg_color = ("black"), progress_color=("green"), command=lambda : self.camera.camera(self.socket_video))
-        self.bouton_camera.grid(row=6, column=1, pady=10, padx=20)
         self.num_photo = 0
         self.n_cam = customtkinter.CTkOptionMenu(self.frame_commandes, fg_color= "black", button_color= "black", values=["choix d'une camera", "1", "2", "3", "4"],
                                          corner_radius=0)
         self.n_cam.grid(row=5, column=2, pady=10, padx=20)
+        self.frame_cam = customtkinter.CTkFrame(master = self.frame_commandes, corner_radius=0)
+        self.frame_cam.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
+        self.camera = Camera()
+        self.socket_video = [self.socket_video_1,self.socket_video_2]
+        self.bouton_camera_1 = customtkinter.CTkSwitch(master = self.frame_commandes, text="Camera 1", corner_radius = 0, fg_color = ("black"), command=lambda : self.camera.camera(1, self.socket_video[0]))
+        self.bouton_camera_2 = customtkinter.CTkSwitch(master = self.frame_commandes, text="Camera 2", corner_radius = 0, fg_color = ("black"), command=lambda : self.camera.camera(2, self.socket_video[1]))
+        #self.bouton_camera = customtkinter.CTkSwitch(master = self.frame_commandes, text="Camera", corner_radius = 0, fg_color = ("black"), progress_color=("green"), command=lambda : self.camera.camera(self.n_cam.get(), self.socket_video[int(self.n_cam.get())-1]))
+        #self.bouton_camera.grid(row=6, column=1, pady=10, padx=20)
+        self.bouton_camera_1.grid(row=6, column=1, pady=10, padx=20)
+        self.bouton_camera_2.grid(row=7, column=1, pady=10, padx=20)
         self.bouton_photo = customtkinter.CTkButton(master = self.frame_commandes, text="Photo", 
                                                corner_radius = 0,
                                                fg_color = ("black"),
                                                command=self.take_photo) 
         self.bouton_photo.grid(row=6, column=2, pady=10, padx=20)
         self.etat_pince = 0
-        self.bouton_pince = customtkinter.CTkButton(master = self.frame_commandes, text="Pince", 
+        self.Prélèvement = customtkinter.CTkButton(master = self.frame_commandes, text="Prélèvement", 
                                                corner_radius = 0,
                                                fg_color = ("black"),
-                                               command=lambda: self.ouvre_ferme_pince(self.etat_pince)) 
-        self.bouton_pince.grid(row=6, column=0, pady=10, padx=20)
+                                               command=lambda: self.prelevement(self.etat_pince)) 
+        self.Prélèvement.grid(row=6, column=0, pady=10, padx=20)
 
         #==== Frame_reglage ====
 
@@ -461,16 +472,6 @@ class App(customtkinter.CTk):
                                                   font=("Roboto Medium", 20))
         
         self.label_title.grid(row=0, column=0, pady=10, padx=20)
-        
-        self.label_numero_mission = customtkinter.CTkLabel(master = self.frame_traçabilite,
-                                                  text="Numéro de mission :",
-                                                  corner_radius = 0,
-                                                  font=("Roboto Medium", 20))
-        self.label_numero_mission.grid(row=1, column=0, pady=10, padx=20)
-
-        self.entry_numéro_mission = customtkinter.CTkEntry(master = self.frame_traçabilite,
-                                                  font=("Roboto Medium", 20))
-        self.entry_numéro_mission.grid(row=1, column=1, pady=10, padx=20)
 
         self.label_numero_prelevement = customtkinter.CTkLabel(master = self.frame_traçabilite,
                                                   text="Numéro de prélèvement :",
@@ -646,13 +647,27 @@ class App(customtkinter.CTk):
                                                   font=("Roboto Medium", 20))
         self.entry_zone.grid(row=5, column=1, pady=10, padx=20) 
 
+        self.label_numero_mission = customtkinter.CTkLabel(master = self.frame_prepa_mission,
+                                                  text="Numéro de mission :",
+                                                  corner_radius = 0,
+                                                  font=("Roboto Medium", 20))
+        self.label_numero_mission.grid(row=6, column=0, pady=10, padx=20)
+
+        self.entry_numéro_mission = customtkinter.CTkEntry(master = self.frame_prepa_mission,
+                                                  font=("Roboto Medium", 20))
+        self.entry_numéro_mission.grid(row=6, column=1, pady=10, padx=20)
+        self.generate_qr_codes = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Generate QRCodes", corner_radius = 0,
+                                               fg_color = ("gray75"), text_color= ("black"),
+                                               command= self.generate_qr_code)
+        self.generate_qr_codes.grid(row=7, column=0, pady=10, padx=20)
+
     #==== frame_stockage ====
 
         self.frame_stockage = customtkinter.CTkFrame(master = self.frame_info)
         
 
         self.frame_stockage.columnconfigure(0, weight=1)
-        self.frame_stockage.rowconfigure((0,1), weight=1)
+        self.frame_stockage.rowconfigure((0,1,2), weight=1)
 
         self.label_title_stockage = customtkinter.CTkLabel(master = self.frame_stockage, 
                                                   text="STOCKAGE",
@@ -662,8 +677,8 @@ class App(customtkinter.CTk):
         self.frame_cam_1 = customtkinter.CTkFrame(master = self.frame_stockage, width = 200, height=200, corner_radius=0)
         self.frame_cam_1.grid(row=1, column=0, pady=10, padx=20, sticky="nsew")
 
-        self.frame_cam_2 = customtkinter.CTkFrame(master = self.frame_stockage, width = 200, height=200, corner_radius=0)
-        self.frame_cam_2.grid(row=1, column=1, pady=10, padx=20, sticky="nsew")
+        """self.frame_cam_2 = customtkinter.CTkFrame(master = self.frame_stockage, width = 200, height=200, corner_radius=0)
+        self.frame_cam_2.grid(row=1, column=1, pady=10, padx=20, sticky="nsew")"""
 
         #TODO recup capteur stockage
         self.etat_stockage_1 = "Full"
@@ -673,9 +688,11 @@ class App(customtkinter.CTk):
                                                   text="Etat des zones de stockage :",
                                                   font=("Roboto Medium", 20))
         self.label_etat_stockage.grid(row=2, column=0, pady=10, padx=20)
-
-        self.frame_stockage_1 = customtkinter.CTkFrame(master = self.frame_stockage, width = 100, height=100, corner_radius=0)
-        self.frame_stockage_1.grid(row=3, column=0, pady=10, padx=20, sticky="nsew")
+        self.ouvre_ferme_1 = "Fermée"
+        self.ouvre_ferme_2 = "Fermée"
+        self.ouvre_ferme_3 = "Fermée"
+        self.frame_stockage_1 = customtkinter.CTkFrame(master = self.frame_stockage, width = 80, height=100, corner_radius=0)
+        self.frame_stockage_1.grid(row=3, column=0, pady=10, padx=40, sticky="nsew")
         self.frame_stockage_1.rowconfigure((0,1), weight=1)
         self.frame_stockage_1.columnconfigure((0), weight=1)
         self.nom_stockage_1 = customtkinter.CTkLabel(master = self.frame_stockage_1, 
@@ -686,14 +703,23 @@ class App(customtkinter.CTk):
                                                   text=self.etat_stockage_1,
                                                   text_color = "red",
                                                   font=("Roboto Medium", 20))
-        self.etat_stockage_1.grid(row=1, column=0, pady=10, padx=20)
+        self.etat_stockage_1.grid(row=2, column=0, pady=10, padx=20)
+        self.identifiant_stockage_1 = customtkinter.CTkLabel(master = self.frame_stockage_1, 
+                                                  text="_1",
+                                                  text_color = "black",
+                                                  font=("Roboto Medium", 20))
+        self.identifiant_stockage_1.grid(row=1, column=0, pady=10, padx=20)
+        self.bouton_ouverture_1 = customtkinter.CTkButton(master = self.frame_stockage_1, text="Ouvrir", corner_radius = 0,
+                                               fg_color = ("gray75"), text_color= ("green"),
+                                               command= self.ouvre_boite_1)
+        self.bouton_ouverture_1.grid(row=3, column=0, pady=10, padx=20)
         self.bouton_traçabilite_1 = customtkinter.CTkButton(master = self.frame_stockage_1, text="voir traçabilité", corner_radius = 0,
                                                fg_color = ("gray75"), text_color= ("black"),
                                                command= self.afficher_tracabilite)
-        self.bouton_traçabilite_1.grid(row=2, column=0, pady=10, padx=20)
+        self.bouton_traçabilite_1.grid(row=4, column=0, pady=10, padx=20)
                                                             
-        self.frame_stockage_2 = customtkinter.CTkFrame(master = self.frame_stockage, width = 100, height=100, corner_radius=0)
-        self.frame_stockage_2.grid(row=3, column=1, pady=10, padx=20, sticky="nsew")
+        self.frame_stockage_2 = customtkinter.CTkFrame(master = self.frame_stockage, width = 200, height=100, corner_radius=0)
+        self.frame_stockage_2.grid(row=3, column=1, padx=10, pady=10, sticky="nsew")
         self.frame_stockage_2.rowconfigure((0,1), weight=1)
         self.frame_stockage_2.columnconfigure((0), weight=1)
         self.nom_stockage_2 = customtkinter.CTkLabel(master = self.frame_stockage_2, 
@@ -704,15 +730,24 @@ class App(customtkinter.CTk):
                                                   text=self.etat_stockage_2,
                                                   text_color = "green",
                                                   font=("Roboto Medium", 20))
-        self.etat_stockage_2.grid(row=1, column=0, pady=10, padx=20)
+        self.etat_stockage_2.grid(row=2, column=0, pady=10, padx=20)
+        self.identifiant_stockage_2 = customtkinter.CTkLabel(master = self.frame_stockage_2, 
+                                                  text="_1",
+                                                  text_color = "black",
+                                                  font=("Roboto Medium", 20))
+        self.identifiant_stockage_2.grid(row=1, column=0, pady=10, padx=20)
+        self.bouton_ouverture_2 = customtkinter.CTkButton(master = self.frame_stockage_2, text="Ouvrir", corner_radius = 0,
+                                               fg_color = ("gray75"), text_color= ("green"),
+                                               command= self.ouvre_boite_2)
+        self.bouton_ouverture_2.grid(row=3, column=0, pady=10, padx=20)
         self.bouton_traçabilite_2 = customtkinter.CTkButton(master = self.frame_stockage_2, text="voir traçabilité", corner_radius = 0,
                                                fg_color = ("gray75"), text_color= ("black"),
                                                command= self.afficher_tracabilite)
-        self.bouton_traçabilite_2.grid(row=2, column=0, pady=10, padx=20)
+        self.bouton_traçabilite_2.grid(row=4, column=0, pady=10, padx=20)
 
-        self.frame_stockage_3 = customtkinter.CTkFrame(master = self.frame_stockage, width = 100, height=100, corner_radius=0)
+        self.frame_stockage_3 = customtkinter.CTkFrame(master = self.frame_stockage, width = 200, height=100, corner_radius=0)
         self.frame_stockage_3.grid(row=3, column=2, pady=10, padx=20, sticky="nsew")
-        self.frame_stockage_3.rowconfigure((0,1), weight=1)
+        self.frame_stockage_3.rowconfigure((0,1,2,3,4), weight=1)
         self.frame_stockage_3.columnconfigure((0), weight=1)
         self.nom_stockage_3 = customtkinter.CTkLabel(master = self.frame_stockage_3, 
                                                   text="Zone stockage 3",
@@ -722,12 +757,57 @@ class App(customtkinter.CTk):
                                                   text=self.etat_stockage_3,
                                                   text_color = "green",
                                                   font=("Roboto Medium", 20))
-        self.etat_stockage_3.grid(row=1, column=0, pady=10, padx=20)
+        self.etat_stockage_3.grid(row=2, column=0, pady=10, padx=20)
+        self.identifiant_stockage_3 = customtkinter.CTkLabel(master = self.frame_stockage_3, 
+                                                  text="_1",
+                                                  text_color = "black",
+                                                  font=("Roboto Medium", 20))
+        self.identifiant_stockage_3.grid(row=1, column=0, pady=10, padx=20)
+        self.bouton_ouverture_3 = customtkinter.CTkButton(master = self.frame_stockage_3, text="Ouvrir", corner_radius = 0,
+                                               fg_color = ("gray75"), text_color= ("green"),
+                                               command= self.ouvre_boite_3)
+        self.bouton_ouverture_3.grid(row=3, column=0, pady=10, padx=20)
         self.bouton_traçabilite_3 = customtkinter.CTkButton(master = self.frame_stockage_3, text="voir traçabilité", corner_radius = 0,
                                                fg_color = ("gray75"), text_color= ("black"),
                                                command= self.afficher_tracabilite)
-        self.bouton_traçabilite_3.grid(row=2, column=0, pady=10, padx=20)
-        
+        self.bouton_traçabilite_3.grid(row=4, column=0, pady=10, padx=20)
+    
+    def ouvre_boite_1(self):
+        if self.bouton_ouverture_1.cget("text") == "Ouvrir":
+            self.bouton_ouverture_1.configure(text="Fermer", text_color= "red")
+            self.socket_command.send(b"ouvre boite 1")
+            message = self.socket_command.recv()
+            print(message.decode())
+        else :
+            self.bouton_ouverture_1.configure(text="Ouvrir", text_color= "green")
+            self.socket_command.send(b"ferme boite 1")
+            message = self.socket_command.recv()
+            print(message.decode())
+
+    def ouvre_boite_2(self):
+        if self.bouton_ouverture_2.cget("text") == "Ouvrir":
+            self.bouton_ouverture_2.configure(text="Fermer", text_color= "red")
+            self.socket_command.send(b"ouvre boite 2")
+            message = self.socket_command.recv()
+            print(message.decode())
+        else :
+            self.bouton_ouverture_2.configure(text="Ouvrir", text_color= "green")
+            self.socket_command.send(b"ferme boite 2")
+            message = self.socket_command.recv()
+            print(message.decode())
+
+    def ouvre_boite_3(self):
+        if self.bouton_ouverture_3.cget("text") == "Ouvrir":
+            self.bouton_ouverture_3.configure(text="Fermer", text_color= "red")
+            self.socket_command.send(b"ouvre boite 3")
+            message = self.socket_command.recv()
+            print(message.decode())
+        else :
+            self.bouton_ouverture_3.configure(text="Ouvrir", text_color= "green")
+            self.socket_command.send(b"ferme boite 3")
+            message = self.socket_command.recv()
+            print(message.decode())
+
     def afficher_state(self, event=0):
         self.bouton_reglage.configure(fg_color = "gray75")
         self.bouton_ssh.configure(fg_color = "gray75") 
@@ -850,7 +930,6 @@ class App(customtkinter.CTk):
     def LEDS_on_off(self, event=0):
         self.socket_command.send(b"LEDS")
         message = self.socket_command.recv()
-        print(message.decode())
 
         #TODO : changer le texte du label en fonction de la réponse de la raspberry
         if self.frame_switch_LEDS.get() == 1:
@@ -926,15 +1005,28 @@ class App(customtkinter.CTk):
         self.num_photo+=1 
         print("Capture de la fenêtre réalisée et enregistrée sous le nom 'Photo_Sysm@p_"+str(self.num_photo)+".jpg'")
    
-    def ouvre_ferme_pince(self, etat_pince, event=0):
-        if etat_pince == 0:
-            self.etat_pince = 1
-            self.socket_command.send(b"Ouvre pince")
+    def prelevement(self, etat_pince, event=0):
+        if self.choix_outil.get() == "Prélèvement solide":
+            if etat_pince == 0:
+                self.etat_pince = 1
+                self.socket_command.send(b"Ouvre pince")
+                message = self.socket_command.recv()
+                print(message.decode())
+            elif etat_pince == 1:
+                self.etat_pince = 0
+                self.socket_command.send(b"Ferme pince")
+                message = self.socket_command.recv()
+                print(message.decode())
+        elif self.choix_outil.get() == "Prélèvement liquide":
+            self.socket_command.send(b"Preleve liquide")
             message = self.socket_command.recv()
             print(message.decode())
-        elif etat_pince == 1:
-            self.etat_pince = 0
-            self.socket_command.send(b"Ferme pince")
+        elif self.choix_outil.get() == "Prélèvement poussière":
+            self.socket_command.send(b"Preleve poussiere")
+            message = self.socket_command.recv()
+            print(message.decode())
+        elif self.choix_outil.get() == "Frottis":
+            self.socket_command.send(b"Preleve frottis")
             message = self.socket_command.recv()
             print(message.decode())
 
@@ -954,7 +1046,7 @@ class App(customtkinter.CTk):
         print("rapport traçabilité")
 
     def exporter(self, event=0):
-        pdf_path = "C:/Users/roman/Documents/Rapports Sysm@p/Rapport du prélèvement n°"+str(self.entry_numéro_prelevement.get())+ " de la mission " + self.entry_numéro_mission.get() + ".pdf"
+        pdf_path = "C:/Users/roman/Documents/Rapports Sysm@p/"+str(self.entry_numéro_mission.get() +"_"+self.entry_numéro_prelevement.get()) + ".pdf"
         pdf = canvas.Canvas(pdf_path)
         pdf.setStrokeColorRGB(0, 0, 0)  # Couleur de contour noire
         pdf.rect(50, 50, 500, 750)
@@ -994,19 +1086,43 @@ class App(customtkinter.CTk):
         if self.Type_extract == "pdf":
             if self.photo is not None: 
                 dist_up = 430
-                for i in os.listdir(self.filename):
-                    img_path = os.path.join(self.filename, i)
-                    img = cv2.imread(img_path)
-                    pdf.drawImage(img_path, 150, dist_up, width=100, height=100)
-                    dist_up -= 100
-            pdf.save()
-            print("pdf saved")
+                dist_left = 150
+                a = 0
+                number_of_file = 0
+                for path in os.listdir(self.filename):
+                    number_of_file +=1
+                if number_of_file < 9 :
+                    for i in os.listdir(self.filename):
+                        if a == 3:
+                            dist_left += 100
+                            dist_up = 430
+                            a = 0
+                        img_path = os.path.join(self.filename, i)
+                        img = cv2.imread(img_path)
+                        pdf.drawImage(img_path, dist_left, dist_up, width=100, height=100)
+                        dist_up -= 100
+                        a+=1
+                    pdf.save()
+                    print("pdf saved")
+                else : 
+                    print("Veuillez sélectionner un dossier comprenant moins de 9 photos")
+            else :
+                pdf.save()
+                print("pdf saved")
 
         if self.Type_extract == "csv":
             pdf.save()
             csv_path = "C:/Users/roman/Documents/Rapports Sysm@p/Rapport du prélèvement n°"+str(self.entry_numéro_prelevement.get())+ " de la mission " + self.entry_numéro_mission.get() + ".csv"
-            df = read_pdf(pdf_path, pages='all')
-            df.to_csv(csv_path, index=False)
+            #df = read_pdf(pdf_path, pages='all')[0]
+            with pdfplumber.open(pdf_path) as pdf:
+                pages = pdf.pages
+                for page in pages:
+                    text = page.extract_text()
+                    with open(csv_path, 'a', newline='') as csv_file:
+                        writer = csv.writer(csv_file)
+                        for line in text.split('\n'):
+                            writer.writerow(line.split())
+            self.replace_commas_with_spaces(csv_path)
             print("csv saved")
 
     def dossier_photo(self, event=0):
@@ -1014,6 +1130,15 @@ class App(customtkinter.CTk):
                     title='Open a directory',
                     initialdir='C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/',
                     )
+    
+    def replace_commas_with_spaces(self, csv_filepath):
+        with open(csv_filepath, 'r') as file:
+            content = file.read()
+
+        content = content.replace(',', ' ')
+
+        with open(csv_filepath, 'w') as file:
+            file.write(content)
     
     def aperçu_photo(self, event=0):
         for i in os.listdir(self.filename):
@@ -1024,27 +1149,52 @@ class App(customtkinter.CTk):
     connexion = "Non connecté"
     color = "red"
 
+    def generate_qr_code(self, event=0):
+        # Create a QR code instance
+        numéro_mission = self.entry_numéro_mission.get()
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        for i in range(1, 4):
+            # Add data to the QR code
+            qr.add_data(str(numéro_mission) + "_" +str(i))
+            qr.make(fit=True)
+            
+            # Create an image from the QR code instance
+            img = qr.make_image(fill_color="black", back_color="white")
+            
+            # Save the image to a file
+            img.save(str(numéro_mission) + "_" +str(i)+ ".png")
+        self.identifiant_stockage_1.configure(text=str(numéro_mission) + "_1")
+        self.identifiant_stockage_2.configure(text=str(numéro_mission) + "_2")
+        self.identifiant_stockage_3.configure(text=str(numéro_mission) + "_3")
+
     def connexion_ssh(self, event=0):
         self.socket_command.connect('tcp://'+self.entry_adresse_ip.get()+':'+self.entry_adresse_port.get()) 
-        self.socket_video.connect('tcp://'+self.entry_adresse_ip.get()+':5556') 
+        self.socket_video_1.connect('tcp://'+self.entry_adresse_ip.get()+':5556') 
+        self.socket_video_2.connect('tcp://'+self.entry_adresse_ip.get()+':5557') 
         self.socket_command.send(b"Salut Paul")
         message = self.socket_command.recv()
         print(message.decode())
         if message.decode() == "Salut Roman":
             self.connexion = "Connecté"
             self.color = "green"
-
-        #TODO : marche pas
-        """if self.socket_command.recv() == -1:
-            self.connexion = "Déconnecté"
-            self.color = "red"
-            """
-        
         self.label_connexion_state.configure(text=self.connexion, text_color=self.color)
-
+        #TODO : à tester
+        """self.ssh_connect = ssh_connect()
+        while True :
+            if self.ssh_connect.start_connection(self.entry_adresse_ip.get()) == False :
+                self.connexion = "Non connecté"
+                self.color = "red"
+                self.label_connexion_state.configure(text=self.connexion, text_color=self.color)
+                break"""
 if __name__ == '__main__':
     app = App()
     app.mainloop()
+
 
 
 
