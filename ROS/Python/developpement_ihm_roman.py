@@ -22,7 +22,8 @@ from tabula.io import read_pdf
 import os
 import qrcode
 from PIL import Image
-
+import fitz  # PyMuPDF
+import webbrowser
 
 hostname = "192.168.9.101" #tib : 192.168.80.101
 port = "5555"
@@ -715,7 +716,7 @@ class App(customtkinter.CTk):
         self.bouton_ouverture_1.grid(row=3, column=0, pady=10, padx=20)
         self.bouton_traçabilite_1 = customtkinter.CTkButton(master = self.frame_stockage_1, text="voir traçabilité", corner_radius = 0,
                                                fg_color = ("gray75"), text_color= ("black"),
-                                               command= self.afficher_tracabilite)
+                                               command= lambda: self.afficher_pdf(self.PDF[0]))
         self.bouton_traçabilite_1.grid(row=4, column=0, pady=10, padx=20)
                                                             
         self.frame_stockage_2 = customtkinter.CTkFrame(master = self.frame_stockage, width = 200, height=100, corner_radius=0)
@@ -742,7 +743,7 @@ class App(customtkinter.CTk):
         self.bouton_ouverture_2.grid(row=3, column=0, pady=10, padx=20)
         self.bouton_traçabilite_2 = customtkinter.CTkButton(master = self.frame_stockage_2, text="voir traçabilité", corner_radius = 0,
                                                fg_color = ("gray75"), text_color= ("black"),
-                                               command= self.afficher_tracabilite)
+                                               command= lambda: self.afficher_pdf(self.PDF[1]))
         self.bouton_traçabilite_2.grid(row=4, column=0, pady=10, padx=20)
 
         self.frame_stockage_3 = customtkinter.CTkFrame(master = self.frame_stockage, width = 200, height=100, corner_radius=0)
@@ -769,7 +770,7 @@ class App(customtkinter.CTk):
         self.bouton_ouverture_3.grid(row=3, column=0, pady=10, padx=20)
         self.bouton_traçabilite_3 = customtkinter.CTkButton(master = self.frame_stockage_3, text="voir traçabilité", corner_radius = 0,
                                                fg_color = ("gray75"), text_color= ("black"),
-                                               command= self.afficher_tracabilite)
+                                               command= lambda: self.afficher_pdf(self.PDF[2]))
         self.bouton_traçabilite_3.grid(row=4, column=0, pady=10, padx=20)
     
     def ouvre_boite_1(self):
@@ -1045,6 +1046,9 @@ class App(customtkinter.CTk):
     def aperçu_final(self, event=0):
         print("rapport traçabilité")
 
+    num_pdf = 0
+    PDF = [0,0,0]
+
     def exporter(self, event=0):
         pdf_path = "C:/Users/roman/Documents/Rapports Sysm@p/"+str(self.entry_numéro_mission.get() +"_"+self.entry_numéro_prelevement.get()) + ".pdf"
         pdf = canvas.Canvas(pdf_path)
@@ -1071,17 +1075,20 @@ class App(customtkinter.CTk):
         paragraphe1numprélèvement = "Numéro de prélèvement : " + str(self.entry_numéro_prelevement.get())
         pdf.drawString(75, 650, paragraphe1numprélèvement)
 
-        paragraphe1nom = "Nom : " + self.entry_nom_operateur.get()
-        pdf.drawString(75, 630, paragraphe1nom)
+        paragraphe1nomprélèvement = "Nom du prélèvement : " + str(self.entry_numéro_prelevement.get())
+        pdf.drawString(75, 630, paragraphe1nomprélèvement)
+
+        paragraphe1nomOpé = "Nom de l'opérateur : " + self.entry_nom_operateur.get()
+        pdf.drawString(75, 610, paragraphe1nomOpé)
 
         paragraphe1date = "Date : " + self.entry_date.get()
-        pdf.drawString(75, 610, paragraphe1date)
+        pdf.drawString(75, 590, paragraphe1date)
 
         paragraphe1heure = "Heure : " + self.entry_heure.get()
-        pdf.drawString(75, 590, paragraphe1heure)
+        pdf.drawString(75, 570, paragraphe1heure)
 
         paragraphe1commentaire = "Commentaire : " + self.entrée_commentaire.get()
-        pdf.drawString(75, 570, paragraphe1commentaire)
+        pdf.drawString(75, 550, paragraphe1commentaire)
 
         if self.Type_extract == "pdf":
             if self.photo is not None: 
@@ -1104,15 +1111,22 @@ class App(customtkinter.CTk):
                         a+=1
                     pdf.save()
                     print("pdf saved")
+                    self.PDF[self.num_pdf] = pdf_path
+                    self.num_pdf += 1
                 else : 
                     print("Veuillez sélectionner un dossier comprenant moins de 9 photos")
             else :
                 pdf.save()
+                self.PDF[self.num_pdf] = pdf_path
+                self.num_pdf += 1
                 print("pdf saved")
 
         if self.Type_extract == "csv":
             pdf.save()
+            self.PDF[self.num_pdf] = pdf_path
+            self.num_pdf += 1
             csv_path = "C:/Users/roman/Documents/Rapports Sysm@p/Rapport du prélèvement n°"+str(self.entry_numéro_prelevement.get())+ " de la mission " + self.entry_numéro_mission.get() + ".csv"
+            #df = read_pdf(pdf_path, pages='all')[0]
             with pdfplumber.open(pdf_path) as pdf:
                 pages = pdf.pages
                 for page in pages:
@@ -1138,6 +1152,29 @@ class App(customtkinter.CTk):
 
         with open(csv_filepath, 'w') as file:
             file.write(content)
+    
+    def afficher_pdf(self, chemin_du_fichier):
+    # Vérifier si le fichier existe
+        if os.path.isfile(chemin_du_fichier):
+            # Ouvrir le fichier PDF
+            document = fitz.open(chemin_du_fichier)
+            
+            with open("output.txt", "w") as f:
+            # Parcourir chaque page du PDF
+                for numero_page in range(document.page_count):
+                    page = document[numero_page]
+                    
+                    # Extraire le texte de la page et l'écrire dans le fichier
+                    texte = page.get_text("text")
+                    f.write(texte)
+                
+            # Fermer le document PDF
+            document.close()
+
+            # Ouvrir le fichier texte dans une fenêtre de navigateur
+            webbrowser.open(chemin_du_fichier)
+        else:
+            print(f"Le fichier {chemin_du_fichier} n'existe pas.")
     
     def aperçu_photo(self, event=0):
         for i in os.listdir(self.filename):
@@ -1182,18 +1219,7 @@ class App(customtkinter.CTk):
             self.connexion = "Connecté"
             self.color = "green"
         self.label_connexion_state.configure(text=self.connexion, text_color=self.color)
-        #TODO : à tester
-        """self.ssh_connect = ssh_connect()
-        while True :
-            if self.ssh_connect.start_connection(self.entry_adresse_ip.get()) == False :
-                self.connexion = "Non connecté"
-                self.color = "red"
-                self.label_connexion_state.configure(text=self.connexion, text_color=self.color)
-                break"""
 if __name__ == '__main__':
     app = App()
     app.mainloop()
-
-
-
 
