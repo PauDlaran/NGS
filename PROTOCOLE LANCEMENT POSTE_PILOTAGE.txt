@@ -13,7 +13,7 @@ I - Pour le PREMIER lancement de tests:
 
 3. PP | Ouvrir le roslaunch suivant: roslaunch pipoudou_moveit_config demo.launch
 
-4. PP | Lancer le noed Joy avec cette commande : rosrun joy joy_node _autorepeat_rate:=10
+4. PP | Lancer le node Joy avec cette commande : rosrun joy joy_node _autorepeat_rate:=10
 
 5. RPi | Lancer le programme: main_arduino.py
 
