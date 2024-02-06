@@ -16,7 +16,7 @@ from reportlab.pdfgen import canvas
 import pyautogui 
 import pdfplumber
 import csv
-#from qrcodes_ngs import VideoSubscriber
+from qrcodes_ngs import VideoSubscriber
 import gi
 gi.require_version('Wnck', '3.0')
 from gi.repository import Wnck
@@ -31,7 +31,7 @@ class IHM_NGS(customtkinter.CTk):
     def __init__(self):
         
         super().__init__()
-        #self.video_subscriber = VideoSubscriber()
+        self.video_subscriber = VideoSubscriber()
         self.geometry("1920x1080")
         #création publisher
         self.publisher = rospy.Publisher('IHM_NGS', String, queue_size = 10)
@@ -47,7 +47,7 @@ class IHM_NGS(customtkinter.CTk):
         self.dernier_bouton_clique = None
         
         #Chemin pour enregistrer les qr codes en png
-        self.qr_code_path = "/home/labo-m/NGS/IHM_NGS/QRCODE/"
+        self.qr_code_path = "/home/ngs/Bureau/NGS/IHM_NGS/QRCODE/"
                                                                                
         self.photo = []
 
@@ -772,7 +772,7 @@ class IHM_NGS(customtkinter.CTk):
     def generateQrCode(self, data, event=0):
 
         if data != None:
-            file_path = "/home/labo-m/NGS/IHM_NGS/QRCODE/"
+            file_path = "/home/ngs/Bureau/NGS/IHM_NGS/QRCODE/"
 
             qr = qrcode.QRCode(
             version=1,
@@ -859,15 +859,17 @@ class IHM_NGS(customtkinter.CTk):
 
         found_window = None
         for window in screen.get_windows():
-            if window.get_name() == "Cam1.rviz* - RViz":
+            if window.get_name() == "config_cam.rviz* - RViz":
                 found_window = window
                 break
         if found_window :
             x, y, width, height = found_window.get_geometry()
+            print("found")
             screenshot = pyautogui.screenshot(region=(x, y, width, height))
-            screenshot.save('/home/roman/Bureau/NGS/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
+            print('path=/home/ngs/Bureau/NGS/IHM_NGS/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
+            screenshot.save('/home/ngs/Bureau/NGS/IHM_NGS/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
 
-        self.nom_image.append('C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
+        self.nom_image.append('/home/ngs/Bureau/NGS/IHM_NGS/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
         self.num_photo+=1 
         print("Capture de la fenêtre réalisée et enregistrée sous le nom 'Photo_Sysm@p_"+str(self.num_photo)+".jpg'")
 
@@ -1028,12 +1030,12 @@ class IHM_NGS(customtkinter.CTk):
         if self.MP == 0:
             self.MP = 1
             self.publier_commande("ENAP")
-            self.bouton_moteur_p.configure(fg_color = "green")
+            self.bouton_moteur_P.configure(fg_color = "green")
         else :
             if self.MP == 1:
                 self.MP = 0
                 self.publier_commande("ENAP_OFF")
-                self.bouton_moteur_p.configure(fg_color = "red")
+                self.bouton_moteur_P.configure(fg_color = "red")
 
     def change_bouton_prelevement(self, event=0):
         if self.choix_outil.get() == "Prélèvement solide" :
@@ -1093,16 +1095,16 @@ class IHM_NGS(customtkinter.CTk):
         #Path pour la création des pdf
         pdf_path = None
         if self.dernier_bouton_clique == "Stockage1":
-            pdf_path = "/home/labo-m/NGS/IHM_NGS/Stockages/" + str(self.qr_code1_label.cget("text")) + ".pdf"
-            csv_path = "/home/labo-m/NGS/IHM_NGS/Stockages/" + str(self.qr_code1_label.cget("text")) + ".csv"
+            pdf_path = "/home/ngs/Bureau/NGS/IHM_NGS/Stockages/" + str(self.qr_code1_label.cget("text")) + ".pdf"
+            csv_path = "/home/ngs/Bureau/NGS/IHM_NGS/Stockages/" + str(self.qr_code1_label.cget("text")) + ".csv"
             qr_code_label = self.qr_code1_label
         if self.dernier_bouton_clique == "Stockage2":
-            pdf_path = "/home/labo-m/NGS/IHM_NGS/Stockages/" + str(self.qr_code2_label.cget("text")) + ".pdf"
-            csv_path = "/home/labo-m/NGS/IHM_NGS/Stockages/" + str(self.qr_code2_label.cget("text")) + ".csv"
+            pdf_path = "/home/ngs/Bureau/NGS/IHM_NGS/Stockages/" + str(self.qr_code2_label.cget("text")) + ".pdf"
+            csv_path = "/home/ngs/Bureau/NGS/IHM_NGS/Stockages/" + str(self.qr_code2_label.cget("text")) + ".csv"
             qr_code_label = self.qr_code2_label
         if self.dernier_bouton_clique == "Stockage3 ":
-            pdf_path = "/home/labo-m/NGS/IHM_NGS/Stockages/" + str(self.qr_code3_label.cget("text")) + ".pdf"    
-            csv_path = "/home/labo-m/NGS/IHM_NGS/Stockages/" + str(self.qr_code3_label.cget("text")) + ".csv"          
+            pdf_path = "/home/ngs/Bureau/NGS/IHM_NGS/Stockages/" + str(self.qr_code3_label.cget("text")) + ".pdf"    
+            csv_path = "/home/ngs/Bureau/NGS/IHM_NGS/Stockages/" + str(self.qr_code3_label.cget("text")) + ".csv"          
             qr_code_label = self.qr_code3_label                 
         pdf = canvas.Canvas(pdf_path)
         pdf.setStrokeColorRGB(0, 0, 0)  # Couleur de contour noire
@@ -1223,7 +1225,7 @@ class IHM_NGS(customtkinter.CTk):
     def dossier_photo(self, event=0):
         self.filename = filedialog.askdirectory(
                     title='Open a directory',
-                    initialdir='C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/',
+                    initialdir='/home/ngs/Bureau/NGS/IHM_NGS/PHOTOS',
                     )
     
     def aperçu_photo(self, event=0):
@@ -1275,11 +1277,11 @@ class IHM_NGS(customtkinter.CTk):
         if data.data.startswith("temp_ext"):
             self.value_temp_ext.configure(text=data.data.split("=")[-1] + "°C")
         if data.data.startswith("inertie_X"):
-            self.value_inertie_X.configure(text=str(int(data.data.split("=")[-1])-1))
+            self.value_inertie_X.configure(text=str(round(float(data.data.split("=")[-1])-1,2)))
         if data.data.startswith("inertie_Y"):
-            self.value_inertie_Y.configure(text=str(int(data.data.split("=")[-1])-1))
+            self.value_inertie_Y.configure(text=str(round(float(data.data.split("=")[-1])-1,2)))
         if data.data.startswith("inertie_Z"):
-            self.value_inertie_Z.configure(text=str(int(data.data.split("=")[-1])-1))
+            self.value_inertie_Z.configure(text=str(round(float(data.data.split("=")[-1])-1,2)))
         if data.data.startswith("init_bras_1"):
             value = data.data.split("=")[-1]
             if value == "0" :
