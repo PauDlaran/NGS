@@ -1157,8 +1157,8 @@ class IHM_NGS(customtkinter.CTk):
             print(str(self.qr_code_path)+str(self.qr_code3_label.cget("text"))+".png")
         if self.Type_extract == "pdf":
             if os.listdir(self.filename) != []: 
-                dist_up = 430
-                dist_left = 150
+                dist_up = 150
+                dist_left = 130
                 a=0
                 number_of_file = 0
                 for path in os.listdir(self.filename): 
@@ -1170,7 +1170,7 @@ class IHM_NGS(customtkinter.CTk):
                             dist_up = 230
                             a = 0
                         img_path = os.path.join(self.filename, i)
-                        pdf.drawImage(img_path, 150, dist_up, width=200, height=200)
+                        pdf.drawImage(img_path, 150, dist_up, width=400, height=300)
                         a+=1
                     pdf.save()
                     print("pdf saved")
