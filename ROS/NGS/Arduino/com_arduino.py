@@ -3,21 +3,22 @@
 # Les trams envoyées par la RPi varient selon la situation, du moins pour la plus part des valeurs.
 # Les templates de tram sont sur le git ou dans le DriveNGS : Trame de communication.xlsx
 
-from numpy import length
+from numpy import len
 import struct
 import serial
 import threading
 
 # Initialisation du dico stockant les données reçues de l'arduino
 # bcm => bras courant moteur x, pcm => préhenseur courant moteur, cmp => courant moetur pompe, ti=> temp interrieur, te => temp extérieur, ix => inertie x, iy = > inertie y, iz => inertie z
-empty_list={"bcm1" : -1,"bcm2" : -1,"bcm3" : -1,"bcm4" : -1,"pcm" : -1,"cmp" : -1,"ti" : -1,"te" : -1,"ix" : -1,"iy" : -1,"iz" : -1}
+
 
 
 class Com_arduino(threading.Thread):
-    def __init__(self) :
+    def __init__(self, size) :
         threading.Thread.__init__(self)
         self.ser = serial.Serial("/dev/ttyACM0", 110200, timeout=10) 
         self.value = {}
+        self.size = size
         self.continu = True
         self.lock = threading.RLock()
         self.start()
@@ -25,7 +26,8 @@ class Com_arduino(threading.Thread):
 
     def get_value(self) :
         with self.lock :
-            if self.Expli=={}:
+            if self.value=={}:
+                empty_list={"bcm1" : -1,"bcm2" : -1,"bcm3" : -1,"bcm4" : -1,"pcm" : -1,"cmp" : -1,"ti" : -1,"te" : -1,"ix" : -1,"iy" : -1,"iz" : -1}
                 return empty_list
             else:
                 return self.value
@@ -33,53 +35,68 @@ class Com_arduino(threading.Thread):
     def close(self) :
         self.continu = False
 
-    def run(self) :#Viens extraire les data du port et les convertir de bytes vers float
-        while self.continu :
-            header1 = self.ser.read()[0]  #viens lire le premier byte, modifier avec la commande réel (SerialPip)
-            header2 = self.ser.read()[1]
+    # def run(self) :#Viens extraire les data du port et les convertir de bytes vers float
+    #region
+    #     while self.continu :
+    #         header1 = self.ser.read()[0]  #viens lire le premier byte, modifier avec la commande réel (SerialPip)
+    #         header2 = self.ser.read()[1]
 
-            if header1 == [0x5C] & header2 == [0x6E] :
-                frame = []
-                while slef
-                frame.extend(list(self.ser.read(27))) 
-            with self.lock :
-                # Remplissage d'un dico
-                # A tester, valeurs émises sur un bit?
-                # Besoin d'un bit start et stop pour cinder les trams
-                # Retour chariot capté par Serial? (comme)
-                self.value = {
-                    'bcm1' : frame[0],
-                    'bcm2' : frame[1],
-                    'bcm3' : frame[3],
-                    'bcm3' : frame[5],
+    #         if header1 == [0x5C] & header2 == [0x6E] :
+    #             frame = []
+    #             while slef
+    #             frame.extend(list(self.ser.read(27))) 
+    #         with self.lock :
+    #             # Remplissage d'un dico
+    #             # A tester, valeurs émises sur un bit?
+    #             # Besoin d'un bit start et stop pour cinder les trams
+    #             # Retour chariot capté par Serial? (comme)
+    #             self.value = {
+    #                 'bcm1' : frame[0],
+    #                 'bcm2' : frame[1],
+    #                 'bcm3' : frame[3],
+    #                 'bcm3' : frame[5],
     
-                    'pcm' : frame[7],
-                    'cmp' : frame[9],
+    #                 'pcm' : frame[7],
+    #                 'cmp' : frame[9],
     
-                    'ti' : frame[11],
-                    'te' : frame[15],
+    #                 'ti' : frame[11],
+    #                 'te' : frame[15],
     
-                    'ix' : frame[19],
-                    'iy' : frame[21],
-                    'iz' : frame[23],
-                }
+    #                 'ix' : frame[19],
+    #                 'iy' : frame[21],
+    #                 'iz' : frame[23],
+    #             }
+    #endregion    
+
+    def run2(self) :
+        while True:
+            rep = int.from_byres(self.ser.read(), byteorder='little')
+            while rep != 0x61: #tant que le byte reçu n'est pas le byte de début de tram
+                rep = int.from_bytes(self.ser.read(), byteorder='little')
+            #Reception du byte start
+            if rep == 0x61:
+                out = struct.unpack('f'*self.size, self.ser.read(self.size*4))
+                rep = int.from_bytes(self.ser.read(), 'little')
+                if rep == 0x7A:
+                    with self.lock:
+                        self.value =  {"bcm1" : out[0], "bcm2" : out[1], "bcm3" : out[2], "bcm4" : out[3],
+                                        "pcm" : out[4], "cmp" : out[5],
+                                        "ti" : out[6], "te" : out[7],
+                                        "ix" : out[8], "iy" : out[9], "iz" : out[10]}
                 
 
     def createTramPilotage(self, pb1, vb1, acb1, pb2, vb2, acb2, pb3, vb3, acb3, pb4, vb4, acb4, pp, vp, acp) :
-        
         message = [pb1, vb1, acb1, pb2, vb2, acb2, pb3, vb3, acb3, pb4, vb4, acb4, pp, vp, acp]
-
+        
+        #Entête de la tram
         messageString = "BRAS:"
 
         #Viens construire le long message en string qu'attend l'arduino
-        for i in range(0,length(message)):
-            for a in range(0,2):
-                messageString = messageString + message[i][a] + ";"):
-
-            messageString = messageString + message[i] + ";"
-    
-        messageFinal = messageString + "\n"
-    
+        for i in range(0, len(message), 3):
+            messageString += ",".join(message[i:i+3]) + ";"
+        
+        messageFinal = messageString.rstrip(";") + "/n"
+        
         return messageFinal
     
     def createTramStockage(self, cs1, cs2, cs3) :
@@ -89,7 +106,7 @@ class Com_arduino(threading.Thread):
         messageString = "STOCK:"
 
         #Viens construire le long message en string qu'attend l'arduino
-        for i in range(0,length(message)):
+        for i in range(0,len(message)):
             messageString = messageString + message[i] + ";"
     
         messageFinal = messageString + "\n"
