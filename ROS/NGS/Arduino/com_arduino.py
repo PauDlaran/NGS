@@ -69,10 +69,13 @@ class Com_arduino(threading.Thread):
         
         message = [pb1, vb1, acb1, pb2, vb2, acb2, pb3, vb3, acb3, pb4, vb4, acb4, pp, vp, acp]
 
-        messageString = ENTETE
+        messageString = "BRAS:"
 
         #Viens construire le long message en string qu'attend l'arduino
         for i in range(0,length(message)):
+            for a in range(0,2):
+                messageString = messageString + message[i][a] + ";"):
+
             messageString = messageString + message[i] + ";"
     
         messageFinal = messageString + "\n"
@@ -83,7 +86,7 @@ class Com_arduino(threading.Thread):
         
         message = [cs1, cs2, cs3]
 
-        messageString = ENTETE
+        messageString = "STOCK:"
 
         #Viens construire le long message en string qu'attend l'arduino
         for i in range(0,length(message)):
@@ -97,7 +100,7 @@ class Com_arduino(threading.Thread):
         
         message = [cev1, cev2, cev3, cp]
 
-        messageString = ENTETE
+        messageString = "ASPI:"
 
         #Viens construire le long message en string qu'attend l'arduino
         for i in range(0,length(message)):
