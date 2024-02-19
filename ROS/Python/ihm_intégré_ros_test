@@ -13,10 +13,10 @@ from reportlab.pdfgen import canvas
 import zmq
 import zmq.ssh
 import pyautogui 
-from caméra import Camera
+#from caméra import Camera
 #from check_connection_ssh import ssh_connect
 import pygetwindow as gw
-#from tabula import convert_into
+from tabula import convert_into
 #from tabula.io import read_pdf
 import os
 
@@ -350,10 +350,10 @@ class IHM_NGS(customtkinter.CTk, Node):
         self.n_cam.grid(row=5, column=2, pady=10, padx=20)
         self.frame_cam = customtkinter.CTkFrame(master = self.frame_commandes, corner_radius=0)
         self.frame_cam.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
-        self.camera = Camera()
+        #self.camera = Camera()
         self.socket_video = [self.socket_video_1,self.socket_video_2]
-        self.bouton_camera_1 = customtkinter.CTkSwitch(master = self.frame_commandes, text="Camera 1", corner_radius = 0, fg_color = ("black"), command=lambda : self.camera.camera(1, self.socket_video[0]))
-        self.bouton_camera_2 = customtkinter.CTkSwitch(master = self.frame_commandes, text="Camera 2", corner_radius = 0, fg_color = ("black"), command=lambda : self.camera.camera(2, self.socket_video[1]))
+        self.bouton_camera_1 = customtkinter.CTkSwitch(master = self.frame_commandes, text="Camera 1", corner_radius = 0, fg_color = ("black"))#, command=lambda : self.camera.camera(1, self.socket_video[0]))
+        self.bouton_camera_2 = customtkinter.CTkSwitch(master = self.frame_commandes, text="Camera 2", corner_radius = 0, fg_color = ("black"))#, command=lambda : self.camera.camera(2, self.socket_video[1]))
         #self.bouton_camera = customtkinter.CTkSwitch(master = self.frame_commandes, text="Camera", corner_radius = 0, fg_color = ("black"), progress_color=("green"), command=lambda : self.camera.camera(self.n_cam.get(), self.socket_video[int(self.n_cam.get())-1]))
         #self.bouton_camera.grid(row=6, column=1, pady=10, padx=20)
         self.bouton_camera_1.grid(row=6, column=1, pady=10, padx=20)
@@ -1057,6 +1057,17 @@ class IHM_NGS(customtkinter.CTk, Node):
             self.connexion = "Connecté"
             self.color = "green"
         self.label_connexion_state.configure(text=self.connexion, text_color=self.color)
+    
+    def Ping_test(self, ip_raspb):
+        ip = ip_raspb
+        response = os.popen('ping -c 1 ' + ip).read()
+        if 'reçus = 1' in response:
+            return 1
+        else: 
+            self.connexion = "Non connecté"
+            self.color = "red"
+            self.label_connexion_state.configure(text=self.connexion, text_color=self.color)
+            return 0        
         
 def main(args=None):
     rclpy.init(args=args)
