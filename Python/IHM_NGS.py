@@ -12,6 +12,8 @@ import zmq
 import zmq.ssh
 import pyautogui 
 import tabula  
+import pdfplumber
+import csv
 #import pygetwindow as gw #alternative : pyxdg ?
 
 import os
@@ -27,7 +29,7 @@ class IHM_NGS(customtkinter.CTk):
         self.publisher = rospy.Publisher('IHM_NGS', String, queue_size = 10)
 
         #initialisation de la fennetre
-        super().__init__()
+        # super().__init__()
         self.title("INFORMATION BRAS | PROJET ROS")
 
         #grid dans la fenetre
@@ -87,19 +89,12 @@ class IHM_NGS(customtkinter.CTk):
         
         self.bouton_preparation.grid(row=2, column=0, pady=10, padx=20)
 
-        self.bouton_prelevement = customtkinter.CTkButton(master = self.frame_choix,
-                                                    text="Prélèvement",
-                                                    fg_color=("gray75", "gray30"),
-                                                    command=self.afficher_prelevement
-                                                    )
-        self.bouton_prelevement.grid(row=3, column=0, pady=10, padx=20)
-
-        self.bouton_affichage = customtkinter.CTkButton(master = self.frame_choix,
-                                                    text="Affichage et commande",
+        self.bouton_mission = customtkinter.CTkButton(master = self.frame_choix,
+                                                    text="Mission",
                                                     fg_color=("gray75", "gray30"),
                                                     command=self.afficher_state
                                                     )
-        self.bouton_affichage.grid(row=4, column=0, pady=10, padx=20)
+        self.bouton_mission.grid(row=4, column=0, pady=10, padx=20)
 
         self.bouton_reglage = customtkinter.CTkButton(master = self.frame_choix,
                                                     text="Réglages",
@@ -117,21 +112,13 @@ class IHM_NGS(customtkinter.CTk):
         
         self.bouton_stockage.grid(row=6, column=0, pady=10, padx=20)
 
-        self.bouton_traçabilite = customtkinter.CTkButton(master = self.frame_choix,
-                                                    text="Traçabilite",
-                                                    fg_color=("gray75", "gray30"),
-                                                    command=self.afficher_tracabilite
-                                                    )
-        
-        self.bouton_traçabilite.grid(row=7, column=0, pady=10, padx=20)
-
         self.bouton_ssh = customtkinter.CTkButton(master = self.frame_choix,
                                                     text="Connexion SSH",
                                                     fg_color=("gray75", "gray30"),
                                                     command=self.afficher_ssh
                                                     )
         
-        self.bouton_ssh.grid(row=8, column=0, pady=10, padx=20)
+        self.bouton_ssh.grid(row=7, column=0, pady=10, padx=20)
 
         #==== Frame_Etat ====
 
@@ -174,7 +161,7 @@ class IHM_NGS(customtkinter.CTk):
         self.bouton_reconnexion = customtkinter.CTkButton(master = self.frame_etat, text="Reconnexion/Déconnexion", 
                                                corner_radius = 0,
                                                fg_color = ("black"),
-                                               command=self.connexion_ssh
+                                               command=self.Ping_test
                                             )
         self.bouton_reconnexion.grid(row=2, column=0, pady=10, padx=20)
 
@@ -190,6 +177,63 @@ class IHM_NGS(customtkinter.CTk):
                                                     text="\n\nBienvenue sur l'IHM du projet ROS \n\nVeuillez lancer le programme ROS\n\n",
                                                     font=("Roboto Medium", 20))
         self.label_acceuil.grid(row=0, column=0, pady=10, padx=20)
+
+            #==== frame_prepa_mission ====
+
+        self.frame_prepa_mission = customtkinter.CTkFrame(master = self.frame_info)
+        
+
+        self.frame_prepa_mission.columnconfigure(0, weight=1)
+        self.frame_prepa_mission.rowconfigure((0,1), weight=1)
+
+        self.label_title_prepa_mission = customtkinter.CTkLabel(master = self.frame_prepa_mission,
+                                                  text="Préparation de mission",
+                                                  font=("Roboto Medium", 20))
+        self.label_title_prepa_mission.grid(row=0, column=0, pady=10, padx=20)
+
+        self.choix_outil = customtkinter.CTkOptionMenu(self.frame_prepa_mission, fg_color= "black", button_color= "black", values=["Choix du type de prélèvement", "Prélèvement solide", "Prélèvement liquide", "Prélèvement poussière", "Frottis"],
+                                         corner_radius=0)
+        self.choix_outil.grid(row=1, column=0, pady=10, padx=20, sticky="nsew")
+
+        self.label_numero_mission_prepa = customtkinter.CTkLabel(master = self.frame_prepa_mission,
+                                                  text="Numéro de mission :",
+                                                  corner_radius = 0,
+                                                  font=("Roboto Medium", 20))
+        self.label_numero_mission_prepa.grid(row=2, column=0, pady=10, padx=20)
+
+        self.entry_numéro_mission_prepa = customtkinter.CTkEntry(master = self.frame_prepa_mission,
+                                                  font=("Roboto Medium", 20))
+        self.entry_numéro_mission_prepa.grid(row=2, column=1, pady=10, padx=20)
+
+        self.label_nom_opérateur = customtkinter.CTkLabel(master = self.frame_prepa_mission,
+                                                  text="Nom opérateur :",
+                                                  corner_radius = 0,
+                                                  font=("Roboto Medium", 20))
+        self.label_nom_opérateur.grid(row=3, column=0, pady=10, padx=20)
+
+        self.entry_nom_operateur = customtkinter.CTkEntry(master = self.frame_prepa_mission,
+                                                  font=("Roboto Medium", 20))
+        self.entry_nom_operateur.grid(row=3, column=1, pady=10, padx=20)
+
+        self.label_UE = customtkinter.CTkLabel(master = self.frame_prepa_mission,
+                                                  text="UE :",
+                                                  corner_radius = 0,
+                                                  font=("Roboto Medium", 20))
+        self.label_UE.grid(row=4, column=0, pady=10, padx=20)
+
+        self.entry_UE = customtkinter.CTkEntry(master = self.frame_prepa_mission,
+                                                  font=("Roboto Medium", 20))
+        self.entry_UE.grid(row=4, column=1, pady=10, padx=20)
+
+        self.label_zone = customtkinter.CTkLabel(master = self.frame_prepa_mission,
+                                                  text="Zone :",
+                                                  corner_radius = 0,
+                                                  font=("Roboto Medium", 20))
+        self.label_zone.grid(row=5, column=0, pady=10, padx=20)
+
+        self.entry_zone = customtkinter.CTkEntry(master = self.frame_prepa_mission,
+                                                  font=("Roboto Medium", 20))
+        self.entry_zone.grid(row=5, column=1, pady=10, padx=20) 
 
         #==== frame_affichage ====
 
@@ -366,7 +410,7 @@ class IHM_NGS(customtkinter.CTk):
         self.bouton_connexion = customtkinter.CTkButton(master = self.frame_ssh, text="Initialisation de la connexion", 
                                                corner_radius = 0,
                                                fg_color = ("black"),
-                                               command=self.connexion_ssh
+                                               command=self.Ping_test
                                             )
         self.bouton_connexion.grid(row=3, column=1, pady=10, padx=20)
 
@@ -384,16 +428,6 @@ class IHM_NGS(customtkinter.CTk):
                                                   font=("Roboto Medium", 20))
         
         self.label_title.grid(row=0, column=0, pady=10, padx=20)
-        
-        self.label_numero_mission = customtkinter.CTkLabel(master = self.frame_traçabilite,
-                                                  text="Numéro de mission :",
-                                                  corner_radius = 0,
-                                                  font=("Roboto Medium", 20))
-        self.label_numero_mission.grid(row=1, column=0, pady=10, padx=20)
-
-        self.entry_numéro_mission = customtkinter.CTkEntry(master = self.frame_traçabilite,
-                                                  font=("Roboto Medium", 20))
-        self.entry_numéro_mission.grid(row=1, column=1, pady=10, padx=20)
 
         self.label_numero_prelevement = customtkinter.CTkLabel(master = self.frame_traçabilite,
                                                   text="Numéro de prélèvement :",
@@ -486,88 +520,6 @@ class IHM_NGS(customtkinter.CTk):
                                                fg_color = ("red"),
                                                command= self.exporter) 
         self.bouton_exporter.grid(row=11, column=1, pady=10, padx=20)
-
-    #==== frame_prélèvement ====
-
-        self.frame_prélèvement = customtkinter.CTkFrame(master = self.frame_info)
-        
-
-        self.frame_prélèvement.columnconfigure(0, weight=1)
-        self.frame_prélèvement.rowconfigure((0,1), weight=1)
-
-        self.label_title_prélèvement = customtkinter.CTkLabel(master = self.frame_prélèvement,
-                                                  text="Outil de prélèvement",
-                                                  font=("Roboto Medium", 20))
-        self.label_title_prélèvement.grid(row=0, column=0, pady=10, padx=20)
-
-        self.frame_cam_outil = customtkinter.CTkFrame(master = self.frame_prélèvement, width = 400, height=400, corner_radius=0)
-        self.frame_cam_outil.grid(row=1, column=0, pady=10, padx=20, sticky="nsew", columnspan=2)
-
-        self.bouton_direction_stockage = customtkinter.CTkButton(master = self.frame_prélèvement, text="--> Stockage", corner_radius = 0,
-                                               fg_color = ("gray75"), text_color= ("black"),
-                                               command= self.afficher_stockage)
-        self.bouton_direction_stockage.grid(row=2, column=1, pady=10, padx=20)
-
-    #==== frame_prepa_mission ====
-
-        self.frame_prepa_mission = customtkinter.CTkFrame(master = self.frame_info)
-        
-
-        self.frame_prepa_mission.columnconfigure(0, weight=1)
-        self.frame_prepa_mission.rowconfigure((0,1), weight=1)
-
-        self.label_title_prepa_mission = customtkinter.CTkLabel(master = self.frame_prepa_mission,
-                                                  text="Préparation de mission",
-                                                  font=("Roboto Medium", 20))
-        self.label_title_prepa_mission.grid(row=0, column=0, pady=10, padx=20)
-
-        self.choix_outil = customtkinter.CTkOptionMenu(self.frame_prepa_mission, fg_color= "black", button_color= "black", values=["Choix du type de prélèvement", "Prélèvement solide", "Prélèvement liquide", "Prélèvement poussière", "Frottis"],
-                                         corner_radius=0)
-        self.choix_outil.grid(row=1, column=0, pady=10, padx=20, sticky="nsew")
-
-        self.pourcentage_batterie = 63
-
-        self.label_etat_batterie_base_mobile = customtkinter.CTkLabel(master = self.frame_prepa_mission,
-                                                  text="Etat de la batterie de la base mobile :",
-                                                  corner_radius = 0,
-                                                  font=("Roboto Medium", 20))
-        self.label_etat_batterie_base_mobile.grid(row=2, column=0, pady=10, padx=20)
-
-        self.label_pourcentage_batterie = customtkinter.CTkLabel(master = self.frame_prepa_mission,
-                                                  text=str(self.pourcentage_batterie) +"%",
-                                                  corner_radius = 0,
-                                                  font=("Roboto Medium", 20))
-        self.label_pourcentage_batterie.grid(row=2, column=1, pady=10, padx=20)
-
-        self.label_nom_opérateur = customtkinter.CTkLabel(master = self.frame_prepa_mission,
-                                                  text="Nom opérateur :",
-                                                  corner_radius = 0,
-                                                  font=("Roboto Medium", 20))
-        self.label_nom_opérateur.grid(row=3, column=0, pady=10, padx=20)
-
-        self.entry_nom_operateur = customtkinter.CTkEntry(master = self.frame_prepa_mission,
-                                                  font=("Roboto Medium", 20))
-        self.entry_nom_operateur.grid(row=3, column=1, pady=10, padx=20)
-
-        self.label_UE = customtkinter.CTkLabel(master = self.frame_prepa_mission,
-                                                  text="UE :",
-                                                  corner_radius = 0,
-                                                  font=("Roboto Medium", 20))
-        self.label_UE.grid(row=4, column=0, pady=10, padx=20)
-
-        self.entry_UE = customtkinter.CTkEntry(master = self.frame_prepa_mission,
-                                                  font=("Roboto Medium", 20))
-        self.entry_UE.grid(row=4, column=1, pady=10, padx=20)
-
-        self.label_zone = customtkinter.CTkLabel(master = self.frame_prepa_mission,
-                                                  text="Zone :",
-                                                  corner_radius = 0,
-                                                  font=("Roboto Medium", 20))
-        self.label_zone.grid(row=5, column=0, pady=10, padx=20)
-
-        self.entry_zone = customtkinter.CTkEntry(master = self.frame_prepa_mission,
-                                                  font=("Roboto Medium", 20))
-        self.entry_zone.grid(row=5, column=1, pady=10, padx=20) 
 
     #==== frame_stockage ====
 
@@ -671,25 +623,20 @@ class IHM_NGS(customtkinter.CTk):
     def afficher_state(self, event=0):
         self.bouton_reglage.configure(fg_color = "gray75")
         self.bouton_ssh.configure(fg_color = "gray75") 
-        self.bouton_traçabilite.configure(fg_color = "gray75")
-        self.bouton_prelevement.configure(fg_color = "gray75")
         self.bouton_preparation.configure(fg_color = "gray75")
         self.bouton_stockage.configure(fg_color = "gray75")
-        self.bouton_affichage.configure(fg_color = "green") 
+        self.bouton_mission.configure(fg_color = "green") 
         self.frame_accueil.grid_forget()
         self.frame_reglage.grid_forget()
         self.frame_ssh.grid_forget()
         self.frame_traçabilite.grid_forget()
-        self.frame_prélèvement.grid_forget()
         self.frame_prepa_mission.grid_forget()
         self.frame_stockage.grid_forget()
         self.frame_affichage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
     
     def afficher_reglage(self, event=0):
-        self.bouton_affichage.configure(fg_color = "gray75")
+        self.bouton_mission.configure(fg_color = "gray75")
         self.bouton_ssh.configure(fg_color = "gray75") 
-        self.bouton_traçabilite.configure(fg_color = "gray75")
-        self.bouton_prelevement.configure(fg_color = "gray75")
         self.bouton_preparation.configure(fg_color = "gray75")
         self.bouton_stockage.configure(fg_color = "gray75")
         self.bouton_reglage.configure(fg_color = "green") 
@@ -697,16 +644,13 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_affichage.grid_forget()
         self.frame_ssh.grid_forget()
         self.frame_traçabilite.grid_forget()
-        self.frame_prélèvement.grid_forget()
         self.frame_prepa_mission.grid_forget()
         self.frame_stockage.grid_forget()
         self.frame_reglage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
 
     def afficher_ssh(self, event=0):
-        self.bouton_affichage.configure(fg_color = "gray75")
+        self.bouton_mission.configure(fg_color = "gray75")
         self.bouton_reglage.configure(fg_color = "gray75")
-        self.bouton_traçabilite.configure(fg_color = "gray75")
-        self.bouton_prelevement.configure(fg_color = "gray75")
         self.bouton_preparation.configure(fg_color = "gray75")
         self.bouton_stockage.configure(fg_color = "gray75")
         self.bouton_ssh.configure(fg_color = "green") 
@@ -714,51 +658,28 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_affichage.grid_forget()
         self.frame_reglage.grid_forget()
         self.frame_traçabilite.grid_forget()
-        self.frame_prélèvement.grid_forget()
         self.frame_stockage.grid_forget()
         self.frame_prepa_mission.grid_forget()
         self.frame_ssh.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
 
     def afficher_tracabilite(self, event=0):
-        self.bouton_affichage.configure(fg_color = "gray75")
+        self.bouton_mission.configure(fg_color = "gray75")
         self.bouton_reglage.configure(fg_color = "gray75")
         self.bouton_ssh.configure(fg_color = "gray75")
-        self.bouton_prelevement.configure(fg_color = "gray75")
         self.bouton_preparation.configure(fg_color = "gray75")
         self.bouton_stockage.configure(fg_color = "gray75")
-        self.bouton_traçabilite.configure(fg_color = "green") 
         self.frame_accueil.grid_forget()
         self.frame_affichage.grid_forget()
         self.frame_reglage.grid_forget()
         self.frame_ssh.grid_forget()
-        self.frame_prélèvement.grid_forget()
         self.frame_prepa_mission.grid_forget()
         self.frame_stockage.grid_forget()
         self.frame_traçabilite.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
-
-    def afficher_prelevement(self, event=0):
-        self.bouton_affichage.configure(fg_color = "gray75")
-        self.bouton_reglage.configure(fg_color = "gray75")
-        self.bouton_ssh.configure(fg_color = "gray75")
-        self.bouton_traçabilite.configure(fg_color = "gray75") 
-        self.bouton_preparation.configure(fg_color = "gray75")
-        self.bouton_stockage.configure(fg_color = "gray75")
-        self.bouton_prelevement.configure(fg_color = "green")
-        self.frame_accueil.grid_forget()
-        self.frame_affichage.grid_forget()
-        self.frame_reglage.grid_forget()
-        self.frame_ssh.grid_forget()
-        self.frame_traçabilite.grid_forget()
-        self.frame_prepa_mission.grid_forget()
-        self.frame_stockage.grid_forget()
-        self.frame_prélèvement.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
     
     def afficher_preparation(self, event=0):
-        self.bouton_affichage.configure(fg_color = "gray75")
+        self.bouton_mission.configure(fg_color = "gray75")
         self.bouton_reglage.configure(fg_color = "gray75")
         self.bouton_ssh.configure(fg_color = "gray75")
-        self.bouton_traçabilite.configure(fg_color = "gray75") 
-        self.bouton_prelevement.configure(fg_color = "gray75")
         self.bouton_stockage.configure(fg_color = "gray75")
         self.bouton_preparation.configure(fg_color = "green")
         self.frame_accueil.grid_forget()
@@ -766,16 +687,13 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_reglage.grid_forget()
         self.frame_ssh.grid_forget()
         self.frame_traçabilite.grid_forget()
-        self.frame_prélèvement.grid_forget()
         self.frame_stockage.grid_forget()
         self.frame_prepa_mission.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
 
     def afficher_stockage(self, event=0):
-        self.bouton_affichage.configure(fg_color = "gray75")
+        self.bouton_mission.configure(fg_color = "gray75")
         self.bouton_reglage.configure(fg_color = "gray75")
         self.bouton_ssh.configure(fg_color = "gray75")
-        self.bouton_traçabilite.configure(fg_color = "gray75") 
-        self.bouton_prelevement.configure(fg_color = "gray75")
         self.bouton_preparation.configure(fg_color = "gray75")
         self.bouton_stockage.configure(fg_color = "green")
         self.frame_accueil.grid_forget()
@@ -783,7 +701,6 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_reglage.grid_forget()
         self.frame_ssh.grid_forget()
         self.frame_traçabilite.grid_forget()
-        self.frame_prélèvement.grid_forget()
         self.frame_prepa_mission.grid_forget()
         self.frame_stockage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
 
@@ -895,14 +812,14 @@ class IHM_NGS(customtkinter.CTk):
         print("rapport traçabilité")
 
     def exporter(self, event=0):
-        pdf_path = "/home/Ngs/Rapports Sysm@p/Rapport du prélèvement n°"+str(self.entry_numéro_prelevement.get())+ " de la mission " + self.entry_numéro_mission.get() + ".pdf"
+        pdf_path = "/home/roman/Bureau/NGS/Rapports Sysm@p/Rapport du prélèvement n°"+str(self.entry_numéro_prelevement.get())+ " de la mission " + self.entry_numéro_mission_prepa.get() + ".pdf"
         pdf = canvas.Canvas(pdf_path)
         pdf.setStrokeColorRGB(0, 0, 0)  # Couleur de contour noire
         pdf.rect(50, 50, 500, 750)
 
         #Titre
         pdf.setFont("Helvetica-Bold", 16)
-        title = "Rapport de traçabilité du prélèvement N° " + str(self.entry_numéro_prelevement.get())+ " de la mission " + self.entry_numéro_mission.get()
+        title = "Rapport de traçabilité du prélèvement N° " + str(self.entry_numéro_prelevement.get())+ " de la mission " + self.entry_numéro_mission_prepa.get()
         pdf.drawCentredString(300, 750, title)
 
         #Paragraphe 1
@@ -914,41 +831,76 @@ class IHM_NGS(customtkinter.CTk):
         pdf.drawString(75, 695, titreparagraphe1)
 
         pdf.setFont("Helvetica", 12)
-        paragraphe1nummission = "Numéro de mission : " + self.entry_numéro_mission.get()
+        paragraphe1nummission = "Numéro de mission : " + self.entry_numéro_mission_prepa.get()
         pdf.drawString(75, 670, paragraphe1nummission)
 
         paragraphe1numprélèvement = "Numéro de prélèvement : " + str(self.entry_numéro_prelevement.get())
         pdf.drawString(75, 650, paragraphe1numprélèvement)
 
+        paragraphe1typeprelev = "Type de prélèvement : " + self.choix_outil.get()
+        pdf.drawString(75, 630, paragraphe1typeprelev)
+
         paragraphe1nom = "Nom : " + self.entry_nom_operateur.get()
-        pdf.drawString(75, 630, paragraphe1nom)
+        pdf.drawString(75, 610, paragraphe1nom)
 
         paragraphe1date = "Date : " + self.entry_date.get()
-        pdf.drawString(75, 610, paragraphe1date)
+        pdf.drawString(75, 590, paragraphe1date)
 
         paragraphe1heure = "Heure : " + self.entry_heure.get()
-        pdf.drawString(75, 590, paragraphe1heure)
+        pdf.drawString(75, 570, paragraphe1heure)
 
         paragraphe1commentaire = "Commentaire : " + self.entrée_commentaire.get()
-        pdf.drawString(75, 570, paragraphe1commentaire)
+        pdf.drawString(75, 550, paragraphe1commentaire)
 
         if self.Type_extract == "pdf":
             if self.photo != []: 
                 dist_up = 430
-                for i in os.listdir(self.filename):
-                    img_path = os.path.join(self.filename, i)
-                    img = cv2.imread(img_path)
-                    pdf.drawImage(img_path, 150, dist_up, width=100, height=100)
-                    dist_up -= 100
-            pdf.save()
-            print("pdf saved")
+                dist_left = 150
+                a=0
+                number_of_file = 0
+                for path in os.listdir(self.filename): 
+                    number_of_file+=1
+                if number_of_file <= 9 :
+                    for i in os.listdir(self.filename):
+                        if a == 3 :
+                            dist_left +=100
+                            dist_up = 430
+                            a = 0
+                        img_path = os.path.join(self.filename, i)
+                        pdf.drawImage(img_path, 150, dist_up, width=100, height=100)
+                        dist_up -= 100
+                        a+=1
+                    pdf.save()
+                    print("pdf saved")
+                    showinfo("PDF SAVED !", pdf_path)
+                else :
+                    print("Veuillez sélectionner un dossier de 9 photos maximum")
+            else :
+                pdf.save()
+                print("pdf saved")
 
         if self.Type_extract == "csv":
             pdf.save()
-            csv_path = "C:/Users/roman/Documents/Rapports Sysm@p/Rapport du prélèvement n°"+str(self.entry_numéro_prelevement.get())+ " de la mission " + self.entry_numéro_mission.get() + ".csv"
+            csv_path = "/home/roman/Bureau/NGS/Rapports Sysm@p/Rapport du prélèvement n°"+str(self.entry_numéro_prelevement.get())+ " de la mission " + self.entry_numéro_mission_prepa.get() + ".csv"
             #df = read_pdf(pdf_path, pages='all')[0]
-            tabula.convert_into(pdf_path, csv_path, output_format="csv", pages='all')
+            with pdfplumber.open(pdf_path) as pdf :
+                pages = pdf.pages
+                for page in pages :
+                    text = page.extract_text()
+                    with open(csv_path, 'a', newline='') as csv_file :
+                        writer = csv.writer(csv_file)
+                        for line in text.split('\n'):
+                            writer.writerow(line.split())
+            self.replace_commas_with_spaces(csv_path)
             print("csv saved")
+    
+    def replace_commas_with_spaces(self, csv_path) :
+        with open(csv_path, 'r') as file :
+            content = file.read()
+        
+        content = content.replace(',','')
+        with open(csv_path, 'w') as file :
+            file.write(content)
 
     def dossier_photo(self, event=0):
         self.filename = filedialog.askdirectory(
