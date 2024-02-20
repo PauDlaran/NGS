@@ -192,7 +192,7 @@ class IHM_NGS(customtkinter.CTk):
         self.label_title_prepa_mission.grid(row=0, column=0, pady=10, padx=20)
 
         self.choix_outil = customtkinter.CTkOptionMenu(self.frame_prepa_mission, fg_color= "black", button_color= "black", values=["Choix du type de prélèvement", "Prélèvement solide", "Prélèvement liquide", "Prélèvement poussière", "Frottis"],
-                                         corner_radius=0)
+                                         corner_radius=0, command = self.change_bouton_prelevement)
         self.choix_outil.grid(row=1, column=0, pady=10, padx=20, sticky="nsew")
 
         self.label_numero_mission_prepa = customtkinter.CTkLabel(master = self.frame_prepa_mission,
@@ -325,7 +325,7 @@ class IHM_NGS(customtkinter.CTk):
                                                command=self.take_photo) 
         self.bouton_photo.grid(row=6, column=2, pady=10, padx=20)
         self.etat_pince = 0
-        self.bouton_pince = customtkinter.CTkButton(master = self.frame_commandes, text="Pince", 
+        self.bouton_pince = customtkinter.CTkButton(master = self.frame_commandes, text=self.choix_outil.get(), 
                                                corner_radius = 0,
                                                fg_color = ("black"),
                                                command=lambda: self.ouvre_ferme_pince(self.etat_pince)) 
@@ -771,6 +771,14 @@ class IHM_NGS(customtkinter.CTk):
             self.etat_pince = 0
             self.publier_commande("Ferme pince")
             #recep arduino
+
+    def aspire(self, event=0):
+        self.publier_commande("Aspire")
+        #recep arduino
+    
+    def frottis(self, event=0):
+        self.publier_commande("Aspire")
+        #recep arduino
     
     def ouvre_boite_1(self):
         if self.bouton_ouverture_1.cget("text") == "Ouvrir":
@@ -795,6 +803,16 @@ class IHM_NGS(customtkinter.CTk):
         else :
             self.bouton_ouverture_3.configure(text="Ouvrir", text_color = "green")
             self.publier_commande("Ferme Boite 3")
+
+    def change_bouton_prelevement(self, event=0):
+        if self.choix_outil.get() == "Prélèvement solide" :
+            self.bouton_pince.configure(text= "Pince", command = self.ouvre_ferme_pince)
+        if self.choix_outil.get() == "Prélèvement liquide" :
+            self.bouton_pince.configure(text= "Aspire", command = self.aspire)
+        if self.choix_outil.get() == "Prélèvement poussière" :
+            self.bouton_pince.configure(text= "Aspire", command = self.aspire)
+        if self.choix_outil.get() == "Frottis" :
+            self.bouton_pince.configure(text= "Frottis", command = self.frottis)
 
     Type_extract = None
 
