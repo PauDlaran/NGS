@@ -29,16 +29,13 @@ class TeleopNode:
         self.g = MoveGroupCommander("leo_arm")
         self.go_move = False
         self.pose = Pose()
-        self.pose.position.x = self.g.get_current_pose().pose.position.x
-        self.pose.position.y = self.g.get_current_pose().pose.position.y
-        self.pose.position.z = self.g.get_current_pose().pose.position.z
-        self.pose.orientation = self.g.get_current_pose().pose.orientation
+
         self.success = False
 
         #Initialisation des variables de position et de rotation
         self.translation_tcp = [0, 0, 0]
         self.rotation_tcp = [0, 0, 0]
-        self.joints_values = self.g.get_current_joint_values()
+        self.joints_values = self.g.get_current_joint_values()[0]
         
         self.plan = False
         self.rot = False
@@ -47,8 +44,15 @@ class TeleopNode:
         self.pas = 0.001
         self.pasA = 0.001
 
+    def initialisation_pose(self):
+        self.pose.position.x = self.g.get_current_pose().pose.position.x
+        self.pose.position.y = self.g.get_current_pose().pose.position.y
+        self.pose.position.z = self.g.get_current_pose().pose.position.z
+        self.pose.orientation = self.g.get_current_pose().pose.orientation
+
     #Acquisition et traitement des données du joystick
     def acquisition_joy(self, joy_msg):
+        
         # print("AA")
         axes = joy_msg.axes
         buttons = joy_msg.buttons
@@ -67,13 +71,13 @@ class TeleopNode:
 
         #Incrémentation pour rot base (y)
         if axes[0] > 0:
-            self.joints_values[0] -= self.pas
-            print("rot1 = ", self.joints_values[0])
+            self.joints_values -= self.pas
+            print("rot1 = ", self.joints_values)
             self.rot = True
 
         if axes[0] < 0:
-            self.joints_values[0] += self.pas
-            print("rot1 = ", self.joints_values[0])
+            self.joints_values += self.pas
+            print("rot1 = ", self.joints_values)
             self.rot = True
 
         
@@ -109,34 +113,16 @@ class TeleopNode:
             self.go_move = True
     
     def plan_cartesian_path(self):
-        # Copy class variables to local variables to make the web tutorials more clear.
-        # In practice, you should use the class variables directly unless you have a good
-        # reason not to.
+
         move_group = self.g
 
-        ## BEGIN_SUB_TUTORIAL plan_cartesian_path
-        ##
-        ## Cartesian Paths
-        ## ^^^^^^^^^^^^^^^
-        ## You can plan a Cartesian path directly by specifying a list of waypoints
-        ## for the end-effector to go through. If executing  interactively in a
-        ## Python shell, set scale = 1.0.
-        ##
         waypoints = []
 
-        # wpose = move_group.get_current_pose().pose
-        # wpose.position.z -= scale * 0.1  # First move up (z)
-        # # wpose.position.y += scale * 0.2  # and sideways (y)
         waypoints.append(copy.deepcopy(self.pose))
 
 
-        # We want the Cartesian path to be interpolated at a resolution of 1 cm
-        # which is why we will specify 0.01 as the eef_step in Cartesian
-        # translation.  We will disable the jump threshold by setting it to 0.0,
-        # ignoring the check for infeasible jumps in joint space, which is sufficient
-        # for this tutorial.
         (plan, fraction) = move_group.compute_cartesian_path(
-            waypoints, 0.01, 0.0  # waypoints to follow  # eef_step
+            waypoints, 0.1, 0.0  # waypoints to follow  # eef_step
         )  # jump_threshold
 
         return plan
@@ -147,10 +133,14 @@ class TeleopNode:
         print("Envoi: ")
         # print("x = ", self.pose.position.x)
         # print("z = ", self.pose.position.z)
-        print("y = ", self.joints_values[0])
+        print("y = ", self.joints_values)
+
+        joints = self.g.get_current_joint_values()
+
+        joints[0] = self.joints_values
 
         # self.g.set_pose_target(self.pose)
-        self.g.set_joint_value_target(self.joints_values)
+        self.g.set_joint_value_target(joints)
         # time.sleep(0.5)
         self.success = self.g.go(wait=False)
 
@@ -173,12 +163,13 @@ class TeleopNode:
 if __name__=='__main__':
     node = TeleopNode()
     while True:
-        time.sleep(1)
+        time.sleep(0.1)
         node.acquisition_joy
         # node.plan_cartesian_path
         if node.plan:
             node.execute_plan(node.plan_cartesian_path())
             node.plan = False
+            node.initialisation_pose
 
         if node.rot:
             node.set_pose_goal()
