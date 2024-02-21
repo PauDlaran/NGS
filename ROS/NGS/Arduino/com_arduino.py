@@ -95,7 +95,7 @@ class Com_arduino(threading.Thread):
         for i in range(0, len(message), 3):
             messageString += ",".join(message[i:i+3]) + ";"
         
-        messageFinal = messageString.rstrip(";") + "/n"
+        messageFinal = messageString.rstrip(";") + "\n"
         
         return messageFinal
     
@@ -120,7 +120,7 @@ class Com_arduino(threading.Thread):
         messageString = "ASPI:"
 
         #Viens construire le long message en string qu'attend l'arduino
-        for i in range(0,length(message)):
+        for i in range(0,len(message)):
             messageString = messageString + message[i] + ";"
     
         messageFinal = messageString + "\n"
@@ -131,9 +131,10 @@ class Com_arduino(threading.Thread):
         self.ser.write(msg)
 
 if __name__ == "__main__" :
-    arduino = Com_arduino()
-    import time
+    arduino = Com_arduino(13)
+    arduino.createTramPilotage(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
+    """import time
     
     while True :
         print(arduino.get_value())
-        time.sleep(1)
+        time.sleep(1)"""
