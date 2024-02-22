@@ -19,12 +19,11 @@ import csv
 import os
 
 class IHM_NGS(customtkinter.CTk):
-    WIDTH = 1080
-    HEIGHT = 720
 
     def __init__(self):
-        self.window = customtkinter.CTk()
+        
         super().__init__()
+        self.geometry("1920x1080")
         #création publisher
         self.publisher = rospy.Publisher('IHM_NGS', String, queue_size = 10)
 
@@ -845,10 +844,10 @@ class IHM_NGS(customtkinter.CTk):
 def main(args=None):
     rospy.init_node("NGS")
     my_ihm = IHM_NGS()
-    while my_ihm.window.winfo_exists() :
+    while my_ihm.winfo_exists() :
        my_ihm.mainloop()
     my_ihm.destroy_node()
-    my_ihm.window.destroy()
+    my_ihm.destroy()
     rospy.shutdown()
 
 if __name__ == '__main__':
