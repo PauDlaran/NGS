@@ -96,29 +96,13 @@ class IHM_NGS(customtkinter.CTk):
                                                     )
         self.bouton_mission.grid(row=4, column=0, pady=10, padx=20)
 
-        self.bouton_reglage = customtkinter.CTkButton(master = self.frame_choix,
-                                                    text="Réglages",
-                                                    fg_color=("gray75", "gray30"),
-                                                    command=self.afficher_reglage
-                                                    )
-        
-        self.bouton_reglage.grid(row=5, column=0, pady=10, padx=20)
-
         self.bouton_stockage = customtkinter.CTkButton(master = self.frame_choix,
                                                     text="Stockage",
                                                     fg_color=("gray75", "gray30"),
                                                     command=self.afficher_stockage
                                                     )
         
-        self.bouton_stockage.grid(row=6, column=0, pady=10, padx=20)
-
-        self.bouton_ssh = customtkinter.CTkButton(master = self.frame_choix,
-                                                    text="Connexion SSH",
-                                                    fg_color=("gray75", "gray30"),
-                                                    command=self.afficher_ssh
-                                                    )
-        
-        self.bouton_ssh.grid(row=7, column=0, pady=10, padx=20)
+        self.bouton_stockage.grid(row=5, column=0, pady=10, padx=20)
 
         #==== Frame_Etat ====
 
@@ -158,12 +142,12 @@ class IHM_NGS(customtkinter.CTk):
                                                 font=("Roboto Medium", 20))
         self.label_connexion_state.grid(row=1, column=2, pady=10, padx=20) 
 
-        self.bouton_reconnexion = customtkinter.CTkButton(master = self.frame_etat, text="Reconnexion/Déconnexion", 
+        self.bouton_test_connexion = customtkinter.CTkButton(master = self.frame_etat, text="Test connexion", 
                                                corner_radius = 0,
                                                fg_color = ("black"),
                                                command=self.Ping_test
                                             )
-        self.bouton_reconnexion.grid(row=2, column=0, pady=10, padx=20)
+        self.bouton_test_connexion.grid(row=2, column=0, pady=10, padx=20)
 
         #==== Frame_acceuil ====
 
@@ -308,17 +292,36 @@ class IHM_NGS(customtkinter.CTk):
                                                   fg_color = ("black"),
                                                   font=("Roboto Medium", 20), command=self.zero_axe3)
         self.button_axe3.grid(row=4, column=2, pady=10, padx=20)
+
+        self.button_axe4 = customtkinter.CTkButton(master = self.frame_commandes,
+                                                  text="Axe 4",
+                                                  corner_radius = 0,
+                                                  fg_color = ("black"),
+                                                  font=("Roboto Medium", 20), command=self.zero_axe4)
+        self.button_axe4.grid(row=4, column=3, pady=10, padx=20)
+
+        self.button_axe5 = customtkinter.CTkButton(master = self.frame_commandes,
+                                                  text="Axe 5",
+                                                  corner_radius = 0,
+                                                  fg_color = ("black"),
+                                                  font=("Roboto Medium", 20), command=self.zero_axe5)
+        self.button_axe5.grid(row=4, column=4, pady=10, padx=20)
+
+        self.button_axep = customtkinter.CTkButton(master = self.frame_commandes,
+                                                  text="Préhenseur",
+                                                  corner_radius = 0,
+                                                  fg_color = ("black"),
+                                                  font=("Roboto Medium", 20), command=self.zero_axep)
+        self.button_axep.grid(row=4, column=4, pady=10, padx=20)
+
         self.n_prelev = customtkinter.CTkOptionMenu(self.frame_commandes, fg_color= "black", button_color= "black", values=["choix du prelevement", "1", "2", "3"],
-                                         corner_radius=0)
+                                         corner_radius=0, command = self.change_numero_prelevement)
         self.n_prelev.grid(row=5, column=1, pady=10, padx=20)
         self.num_photo = 0
         self.n_cam = customtkinter.CTkOptionMenu(self.frame_commandes, fg_color= "black", button_color= "black", values=["choix d'une camera", "1", "2", "3", "4"],
                                          corner_radius=0)
         self.n_cam.grid(row=5, column=2, pady=10, padx=20)
         
-        self.bouton_camera_1 = customtkinter.CTkSwitch(master = self.frame_commandes, text="Camera 1", corner_radius = 0, fg_color = ("black"))
-        self.bouton_camera_2 = customtkinter.CTkSwitch(master = self.frame_commandes, text="Camera 2", corner_radius = 0, fg_color = ("black"))
-        self.bouton_camera_2.grid(row=7, column=1, pady=10, padx=20)
         self.bouton_photo = customtkinter.CTkButton(master = self.frame_commandes, text="Photo", 
                                                corner_radius = 0,
                                                fg_color = ("black"),
@@ -330,91 +333,6 @@ class IHM_NGS(customtkinter.CTk):
                                                fg_color = ("black"),
                                                command=lambda: self.ouvre_ferme_pince(self.etat_pince)) 
         self.bouton_pince.grid(row=6, column=0, pady=10, padx=20)
-
-        #==== Frame_reglage ====
-
-        self.frame_reglage = customtkinter.CTkFrame(master = self.frame_info)
-
-        self.frame_reglage.columnconfigure(0, weight=1)
-        self.frame_reglage.rowconfigure((0,1), weight=1)
-
-        self.label_title = customtkinter.CTkLabel(master = self.frame_reglage,
-                                                  text="RÉGLAGES",
-                                                  font=("Roboto Medium", 20))
-        
-        self.label_title.grid(row=0, column=0, pady=10, padx=20)
-
-        self.frame_switch_LEDS = customtkinter.CTkSwitch(master = self.frame_reglage, text=None,
-                                                    corner_radius=0, command=self.LEDS_on_off)
-        self.frame_switch_LEDS.grid(row=1, column=0, pady=10, padx=20, sticky="nsew")
-        self.frame_switch_LEDS.rowconfigure((0,1), weight=1)
-
-        self.label_LEDS = customtkinter.CTkLabel(master = self.frame_reglage,
-                                                  text="Allumage LEDS",
-                                                  corner_radius = 3,
-                                                  fg_color = ("red"),
-                                                  font=("Roboto Medium", 20))
-        self.label_LEDS.grid(row=1, column=1, pady=10, padx=20)
-
-        self.frame_switch_camera = customtkinter.CTkSwitch(master = self.frame_reglage, text=None,
-                                                    corner_radius=0, command=self.cam_on_off)
-        self.frame_switch_camera.grid(row=3, column=0, pady=10, padx=20, sticky="nsew")
-        self.frame_switch_camera.rowconfigure((1,2), weight=1)
-
-        self.label_camera = customtkinter.CTkLabel(master = self.frame_reglage,
-                                                  text="Allumage camera",
-                                                  corner_radius = 3,
-                                                  fg_color = ("red"),
-                                                  font=("Roboto Medium", 20))
-        self.label_camera.grid(row=3, column=1, pady=10, padx=20)
-
-        #==== Frame_ssh ====
-
-        self.frame_ssh = customtkinter.CTkFrame(master = self.frame_info)
-
-        self.frame_ssh.columnconfigure(0, weight=1)
-        self.frame_ssh.rowconfigure((0,1), weight=1)
-
-        self.label_title = customtkinter.CTkLabel(master = self.frame_ssh,
-                                                  text="CONNEXION SSH",
-                                                  font=("Roboto Medium", 20))
-        
-        self.label_title.grid(row=0, column=0, pady=10, padx=20)
-
-        self.entry_adresse_ip = customtkinter.CTkEntry(master = self.frame_ssh,
-                                                  font=("Roboto Medium", 20))
-        self.entry_adresse_ip.grid(row=1, column=1, pady=10, padx=20)
-
-        self.label_adresse_ip = customtkinter.CTkLabel(master = self.frame_ssh,
-                                                  text="Adresse ip :",
-                                                  corner_radius = 0,
-                                                  font=("Roboto Medium", 20))
-        self.label_adresse_ip.grid(row=1, column=0, pady=10, padx=20)
-
-        self.entry_adresse_port = customtkinter.CTkEntry(master = self.frame_ssh,
-                                                  font=("Roboto Medium", 20))
-        self.entry_adresse_port.grid(row=2, column=1, pady=10, padx=20)
-
-        self.label_adresse_port = customtkinter.CTkLabel(master = self.frame_ssh,
-                                                  text="Adresse du port :",
-                                                  corner_radius = 0,
-                                                  font=("Roboto Medium", 20))
-        self.label_adresse_port.grid(row=2, column=0, pady=10, padx=20)
-
-        self.connexion_state = customtkinter.CTkLabel(master = self.frame_ssh,
-                                                  text="Connexion :",
-                                                  corner_radius = 0,
-                                                  font=("Roboto Medium", 20))
-        self.connexion_state.grid(row=3, column=0, pady=10, padx=20)    
-
-        self.bouton_connexion = customtkinter.CTkButton(master = self.frame_ssh, text="Initialisation de la connexion", 
-                                               corner_radius = 0,
-                                               fg_color = ("black"),
-                                               command=self.Ping_test
-                                            )
-        self.bouton_connexion.grid(row=3, column=1, pady=10, padx=20)
-
-        self.camera_lock = threading.Lock()
 
         #==== Frame_traçabilité ====
 
@@ -435,8 +353,8 @@ class IHM_NGS(customtkinter.CTk):
                                                   font=("Roboto Medium", 20))
         self.label_numero_prelevement.grid(row=2, column=0, pady=10, padx=20)
 
-        self.entry_numéro_prelevement = customtkinter.CTkOptionMenu(self.frame_traçabilite, fg_color= "black", button_color= "black", values=["choix du prélèvement", "1", "2", "3"],
-                                         corner_radius=0)
+        self.entry_numéro_prelevement = customtkinter.CTkLabel(master = self.frame_traçabilite, text=self.n_prelev.get(),
+                                         corner_radius=0,font=("Roboto Medium", 20)) 
         self.entry_numéro_prelevement.grid(row=2, column=1, pady=10, padx=20)
 
         self.label_nom = customtkinter.CTkLabel(master = self.frame_traçabilite,
@@ -534,12 +452,6 @@ class IHM_NGS(customtkinter.CTk):
                                                   font=("Roboto Medium", 20))
         self.label_title_stockage.grid(row=0, column=0, pady=10, padx=20)
 
-        self.frame_cam_1 = customtkinter.CTkFrame(master = self.frame_stockage, width = 200, height=200, corner_radius=0)
-        self.frame_cam_1.grid(row=1, column=0, pady=10, padx=20, sticky="nsew")
-
-        self.frame_cam_2 = customtkinter.CTkFrame(master = self.frame_stockage, width = 200, height=200, corner_radius=0)
-        self.frame_cam_2.grid(row=1, column=1, pady=10, padx=20, sticky="nsew")
-
         #TODO recup capteur stockage
         self.etat_stockage_1 = "Full"
         self.etat_stockage_2 = "Empty"
@@ -621,106 +533,44 @@ class IHM_NGS(customtkinter.CTk):
         self.bouton_traçabilite_3.grid(row=2, column=0, pady=10, padx=20)
         
     def afficher_state(self, event=0):
-        self.bouton_reglage.configure(fg_color = "gray75")
-        self.bouton_ssh.configure(fg_color = "gray75") 
         self.bouton_preparation.configure(fg_color = "gray75")
         self.bouton_stockage.configure(fg_color = "gray75")
         self.bouton_mission.configure(fg_color = "green") 
         self.frame_accueil.grid_forget()
-        self.frame_reglage.grid_forget()
-        self.frame_ssh.grid_forget()
         self.frame_traçabilite.grid_forget()
         self.frame_prepa_mission.grid_forget()
         self.frame_stockage.grid_forget()
         self.frame_affichage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
-    
-    def afficher_reglage(self, event=0):
-        self.bouton_mission.configure(fg_color = "gray75")
-        self.bouton_ssh.configure(fg_color = "gray75") 
-        self.bouton_preparation.configure(fg_color = "gray75")
-        self.bouton_stockage.configure(fg_color = "gray75")
-        self.bouton_reglage.configure(fg_color = "green") 
-        self.frame_accueil.grid_forget()
-        self.frame_affichage.grid_forget()
-        self.frame_ssh.grid_forget()
-        self.frame_traçabilite.grid_forget()
-        self.frame_prepa_mission.grid_forget()
-        self.frame_stockage.grid_forget()
-        self.frame_reglage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
-
-    def afficher_ssh(self, event=0):
-        self.bouton_mission.configure(fg_color = "gray75")
-        self.bouton_reglage.configure(fg_color = "gray75")
-        self.bouton_preparation.configure(fg_color = "gray75")
-        self.bouton_stockage.configure(fg_color = "gray75")
-        self.bouton_ssh.configure(fg_color = "green") 
-        self.frame_accueil.grid_forget()
-        self.frame_affichage.grid_forget()
-        self.frame_reglage.grid_forget()
-        self.frame_traçabilite.grid_forget()
-        self.frame_stockage.grid_forget()
-        self.frame_prepa_mission.grid_forget()
-        self.frame_ssh.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
 
     def afficher_tracabilite(self, event=0):
         self.bouton_mission.configure(fg_color = "gray75")
-        self.bouton_reglage.configure(fg_color = "gray75")
-        self.bouton_ssh.configure(fg_color = "gray75")
         self.bouton_preparation.configure(fg_color = "gray75")
         self.bouton_stockage.configure(fg_color = "gray75")
         self.frame_accueil.grid_forget()
         self.frame_affichage.grid_forget()
-        self.frame_reglage.grid_forget()
-        self.frame_ssh.grid_forget()
         self.frame_prepa_mission.grid_forget()
         self.frame_stockage.grid_forget()
         self.frame_traçabilite.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
     
     def afficher_preparation(self, event=0):
         self.bouton_mission.configure(fg_color = "gray75")
-        self.bouton_reglage.configure(fg_color = "gray75")
-        self.bouton_ssh.configure(fg_color = "gray75")
         self.bouton_stockage.configure(fg_color = "gray75")
         self.bouton_preparation.configure(fg_color = "green")
         self.frame_accueil.grid_forget()
         self.frame_affichage.grid_forget()
-        self.frame_reglage.grid_forget()
-        self.frame_ssh.grid_forget()
         self.frame_traçabilite.grid_forget()
         self.frame_stockage.grid_forget()
         self.frame_prepa_mission.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
 
     def afficher_stockage(self, event=0):
         self.bouton_mission.configure(fg_color = "gray75")
-        self.bouton_reglage.configure(fg_color = "gray75")
-        self.bouton_ssh.configure(fg_color = "gray75")
         self.bouton_preparation.configure(fg_color = "gray75")
         self.bouton_stockage.configure(fg_color = "green")
         self.frame_accueil.grid_forget()
         self.frame_affichage.grid_forget()
-        self.frame_reglage.grid_forget()
-        self.frame_ssh.grid_forget()
         self.frame_traçabilite.grid_forget()
         self.frame_prepa_mission.grid_forget()
         self.frame_stockage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
-
-    def LEDS_on_off(self, event=0):
-        #TODO : changer le texte du label en fonction de la réponse de la raspberry
-        if self.frame_switch_LEDS.get() == 1:
-            self.label_LEDS.configure(fg_color = ("green"))
-            self.publier_commande("LEDS ON")
-        else:
-            self.label_LEDS.configure(fg_color = ("red"))
-            self.publier_commande("LEDS OFF")
-        #TODO : changer le texte du label en fonction de la réponse de la raspberry
-    def cam_on_off(self, event=0):
-        #TODO : changer le texte du label en fonction de la réponse de la raspberry
-        if self.frame_switch_camera.get() == 1:
-            self.label_camera.configure(fg_color = ("green"))
-            self.publier_commande("CAM ON")
-        else:
-            self.label_camera.configure(fg_color = ("red"))
-            self.publier_commande("CAM OFF")
     
     def go_to_pose(self, event=0):
         text = "Go to " + str(self.choix_poses.get())
@@ -744,6 +594,21 @@ class IHM_NGS(customtkinter.CTk):
 
     def zero_axe3(self, event=0):
         text = "Zéro Axe 3" 
+        self.publier_commande(text)
+        #recep arduino
+
+    def zero_axe4(self, event=0):
+        text = "Zéro Axe 4" 
+        self.publier_commande(text)
+        #recep arduino
+    
+    def zero_axe5(self, event=0):
+        text = "Zéro Axe 5" 
+        self.publier_commande(text)
+        #recep arduino
+
+    def zero_axep(self, event=0):
+        text = "Zéro Axe P" 
         self.publier_commande(text)
         #recep arduino
 
@@ -773,46 +638,69 @@ class IHM_NGS(customtkinter.CTk):
             #recep arduino
 
     def aspire(self, event=0):
-        self.publier_commande("Aspire")
+        self.publier_commande("Aspire " +self.n_prelev.get())
         #recep arduino
     
     def frottis(self, event=0):
-        self.publier_commande("Aspire")
+        self.publier_commande("Frottis")
         #recep arduino
     
     def ouvre_boite_1(self):
-        if self.bouton_ouverture_1.cget("text") == "Ouvrir":
+        if self.bouton_ouverture_1.cget("text") == "Ouvrir" and self.bouton_ouverture_1.cget("text_color") != "black" :
             self.bouton_ouverture_1.configure(text="Fermer", text_color = "red")
+            self.bouton_ouverture_2.configure(text_color = "black")
+            self.bouton_ouverture_3.configure(text_color = "black")
             self.publier_commande("Ouvre Boite 1")
         else :
-            self.bouton_ouverture_1.configure(text="Ouvrir", text_color = "green")
-            self.publier_commande("Ferme Boite 1")
+            if self.bouton_ouverture_1.cget("text_color") != "black" :
+                self.bouton_ouverture_1.configure(text="Ouvrir", text_color = "green")
+                self.bouton_ouverture_2.configure(text_color = "green")
+                self.bouton_ouverture_3.configure(text_color = "green")
+                self.publier_commande("Ferme Boite 1")
     
     def ouvre_boite_2(self):
-        if self.bouton_ouverture_2.cget("text") == "Ouvrir":
+        if self.bouton_ouverture_2.cget("text") == "Ouvrir" and self.bouton_ouverture_2.cget("text_color") != "black" :
             self.bouton_ouverture_2.configure(text="Fermer", text_color = "red")
+            self.bouton_ouverture_1.configure(text_color = "black")
+            self.bouton_ouverture_3.configure(text_color = "black")
             self.publier_commande("Ouvre Boite 2")
         else :
-            self.bouton_ouverture_2.configure(text="Ouvrir", text_color = "green")
-            self.publier_commande("Ferme Boite 2")
+            if self.bouton_ouverture_2.cget("text_color") != "black" :
+                self.bouton_ouverture_2.configure(text="Ouvrir", text_color = "green")
+                self.bouton_ouverture_1.configure(text_color = "green")
+                self.bouton_ouverture_3.configure(text_color = "green")
+                self.publier_commande("Ferme Boite 2")
     
     def ouvre_boite_3(self):
-        if self.bouton_ouverture_3.cget("text") == "Ouvrir":
+        if self.bouton_ouverture_3.cget("text") == "Ouvrir" and self.bouton_ouverture_3.cget("text_color") != "black" :
             self.bouton_ouverture_3.configure(text="Fermer", text_color = "red")
+            self.bouton_ouverture_1.configure(text_color = "black")
+            self.bouton_ouverture_2.configure(text_color = "black")
             self.publier_commande("Ouvre Boite 3")
         else :
-            self.bouton_ouverture_3.configure(text="Ouvrir", text_color = "green")
-            self.publier_commande("Ferme Boite 3")
+            if self.bouton_ouverture_3.cget("text_color") != "black" :
+                self.bouton_ouverture_3.configure(text="Ouvrir", text_color = "green")
+                self.bouton_ouverture_1.configure(text_color = "green")
+                self.bouton_ouverture_2.configure(text_color = "green")
+                self.publier_commande("Ferme Boite 3")
 
     def change_bouton_prelevement(self, event=0):
         if self.choix_outil.get() == "Prélèvement solide" :
-            self.bouton_pince.configure(text= "Pince", command = self.ouvre_ferme_pince)
+            self.bouton_pince.configure(text= "Pince", command = self.ouvre_ferme_pince(self.etat_pince))
         if self.choix_outil.get() == "Prélèvement liquide" :
             self.bouton_pince.configure(text= "Aspire", command = self.aspire)
         if self.choix_outil.get() == "Prélèvement poussière" :
             self.bouton_pince.configure(text= "Aspire", command = self.aspire)
         if self.choix_outil.get() == "Frottis" :
             self.bouton_pince.configure(text= "Frottis", command = self.frottis)
+    
+    def change_numero_prelevement(self, event=0):
+        if self.n_prelev.get() == "1" :
+            self.entry_numéro_prelevement.configure(text= "1")
+        if self.n_prelev.get() == "2" :
+            self.entry_numéro_prelevement.configure(text= "2")
+        if self.n_prelev.get() == "3" :
+            self.entry_numéro_prelevement.configure(text= "3")
 
     Type_extract = None
 
@@ -936,15 +824,18 @@ class IHM_NGS(customtkinter.CTk):
     color = "red"
 
     def publier_commande(self, commande):
+        self.Ping_test()
         msg = String()
         msg.data = commande
         self.publisher.publish(msg)
     
-    def Ping_test(self, ip_raspb):
-        ip = ip_raspb
-        response = os.popen('ping -c 1 ' + ip).read()
-        if 'reçus = 1' in response:
-            return 1
+    def Ping_test(self):
+        ip = "192.168.38.101"
+        response = os.popen('ping -c 1 -W 1 ' + ip).read()
+        if '1 reçus' in response:
+            self.connexion = "Connecté"
+            self.color = "green"
+            self.label_connexion_state.configure(text=self.connexion, text_color=self.color)
         else: 
             self.connexion = "Non connecté"
             self.color = "red"
