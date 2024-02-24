@@ -5,6 +5,7 @@
 #   - /joy (sensor_msgs/Joy) : Acquisition des données du joystick
 
 import rospy
+import math
 import time
 import copy
 from sensor_msgs.msg import Joy
@@ -29,120 +30,169 @@ class TeleopNode:
         self.g = MoveGroupCommander("leo_arm")
         self.go_move = False
         self.pose = Pose()
-
-        self.success = False
-
-        #Initialisation des variables de position et de rotation
-        self.translation_tcp = [0, 0, 0]
-        self.rotation_tcp = [0, 0, 0]
-        self.joints_values = self.g.get_current_joint_values()[0]
-        
-        self.plan = False
-        self.rot = False
-
-        #Initialisation du pas de déplacement
-        self.pas = 0.001
-        self.pasA = 0.001
-
-    def initialisation_pose(self):
         self.pose.position.x = self.g.get_current_pose().pose.position.x
         self.pose.position.y = self.g.get_current_pose().pose.position.y
         self.pose.position.z = self.g.get_current_pose().pose.position.z
         self.pose.orientation = self.g.get_current_pose().pose.orientation
 
+        self.joints_values = self.g.get_current_joint_values()[0]
+
+        self.success = False
+        self.planr = False
+        self.planz = False
+        self.rot = False
+
+        self.r, self.theta = self.calcul_r_theta(self.pose.position.x, self.pose.position.y)
+
+        #Initialisation du pas de déplacement
+        self.pas = 0.005
+        self.pasA = 0.01
+
+    def initialisation_pose(self):
+        self.pose.position.x = self.g.get_current_pose().pose.position.x
+        self.pose.position.y = self.g.get_current_pose().pose.position.y
+        self.pose.position.z = self.g.get_current_pose().pose.position.z
+        self.pose.orientation.x = self.g.get_current_pose().pose.orientation.x
+        self.pose.orientation.y = self.g.get_current_pose().pose.orientation.y
+        self.pose.orientation.z = self.g.get_current_pose().pose.orientation.z
+        self.pose.orientation.w = self.g.get_current_pose().pose.orientation.w
+
+    def initialisation_joint(self):
+
+        self.joints_values = self.g.get_current_joint_values()[0]
+
+    def initialisation_r_theta(self):
+        self.r, self.theta = self.calcul_r_theta(self.g.get_current_pose().pose.position.x, self.g.get_current_pose().pose.position.y)
+   
     #Acquisition et traitement des données du joystick
     def acquisition_joy(self, joy_msg):
         
-        # print("AA")
+        # self.initialisation_joint
+        # self.initialisation_pose
+
         axes = joy_msg.axes
         buttons = joy_msg.buttons
-        # rospy.loginfo(joy_msg.axes)
-        # rospy.loginfo(joy_msg.buttons)
 
         #Incrémentation pour x tcp
         if axes[1] > 0:
-            self.pose.position.x += self.pas
-            print("x = ", self.pose.position.x)
-            self.plan = True
+            self.r += self.pasA
+            # print("x = ", self.pose.position.x)
+            self.planr = True
         if axes[1] < 0:
-            self.pose.position.x -= self.pas
-            print("x = ", self.pose.position.x)
-            self.plan = True
+            self.r -= self.pasA
+            # print("x = ", self.pose.position.x)
+            self.planr = True
 
         #Incrémentation pour rot base (y)
         if axes[0] > 0:
             self.joints_values -= self.pas
-            print("rot1 = ", self.joints_values)
+            # print("rot1 = ", self.joints_values)
             self.rot = True
-
         if axes[0] < 0:
             self.joints_values += self.pas
-            print("rot1 = ", self.joints_values)
+            # print("rot1 = ", self.joints_values)
             self.rot = True
-
-        
-        # if axes[0] > 0:
-        #     self.pose.position.y += self.pas
-        #     print("y = ", self.pose.position.y)
-        # if axes[0] < 0:
-        #     self.pose.position.y -= self.pas
-        #     print("y = ", self.pose.position.y)
 
         #Incrémentation pour z tcp
         if buttons[2] != 0:
             self.pose.position.z += self.pasA
-            print("z = ", self.pose.position.z)
-            self.plan = True
+            # print("z = ", self.pose.position.z)
+            self.planz = True
         if buttons[3] != 0:
             self.pose.position.z -= self.pasA
-            print("z = ", self.pose.position.z)
-            self.plan = True
+            # print("z = ", self.pose.position.z)
+            self.planz = True
+
+    def calcul_r_theta(self, x, y):
+        r = math.sqrt(x**2 + y**2)
+        theta = 2 * math.atan(y/(x+math.sqrt(x*x+y*y)))
+        return r, theta
+ 
+    def polar_to_cartesian(self, r, theta):
+        x = r * math.cos(theta)
+        print("x = ", x)
+        y = r * math.sin(theta)
+        print("y = ", y)
+        return x, y
+
+    def plan_cartesian_path_r(self):
+
+        # self.pose.position.x = self.g.get_current_pose().pose.position.x
+        # self.pose.position.y = self.g.get_current_pose().pose.position.y
+        # self.pose.position.z = self.g.get_current_pose().pose.position.z
+        # self.pose.orientation.x = self.g.get_current_pose().pose.orientation.x
+        # self.pose.orientation.y = self.g.get_current_pose().pose.orientation.y
+        # self.pose.orientation.z = self.g.get_current_pose().pose.orientation.z
+        # self.pose.orientation.w = self.g.get_current_pose().pose.orientation.w
         
-        #Remise à zéro de la matrice d'état
-        if buttons[1] != 0:
-            self.pose.position.x = self.g.get_current_pose().pose.position.x
-            self.pose.position.y = self.g.get_current_pose().pose.position.y
-            self.pose.position.z = self.g.get_current_pose().pose.position.z
-            self.pose.orientation = self.g.get_current_pose().pose.orientation
-            self.joints_values = self.g.get_current_joint_values()
-            print(self.pose)
-            print("Matrice d'état remise à zéro")
+        # A tester
+        # region
 
-        #Envoi des données à Moveit
-        if buttons[0] != 0:
-            self.go_move = True
-    
-    def plan_cartesian_path(self):
+        # self.success = self.g.go(self.pose, wait=False)
 
-        move_group = self.g
+        # self.g.stop()
+        # self.g.clear_pose_targets()
+
+        # self.go_move = False
+        # endregion
+
+        # Origine
+        # region
+        r = self.r
+        theta = self.theta
+        print("theta = ", theta)
 
         waypoints = []
+        self.pose.position.x, self.pose.position.y = self.polar_to_cartesian(r, theta)
+        
+        
 
         waypoints.append(copy.deepcopy(self.pose))
 
-
-        (plan, fraction) = move_group.compute_cartesian_path(
-            waypoints, 0.1, 0.0  # waypoints to follow  # eef_step
+        (plan, fraction) = self.g.compute_cartesian_path(
+            waypoints, 0.02, 0.0  # waypoints to follow  # eef_step
         )  # jump_threshold
 
-        return plan
+        # print("Fraction: ", fraction)
 
+        return plan
+        # endregion
+    
+
+    def plan_cartesian_path_z(self):
+            
+            # self.pose.position.x = self.g.get_current_pose().pose.position.x
+            # self.pose.position.y = self.g.get_current_pose().pose.position.y
+            # self.pose.position.z = self.g.get_current_pose().pose.position.z
+            # self.pose.orientation.x = self.g.get_current_pose().pose.orientation.x
+            # self.pose.orientation.y = self.g.get_current_pose().pose.orientation.y
+            # self.pose.orientation.z = self.g.get_current_pose().pose.orientation.z
+            # self.pose.orientation.w = self.g.get_current_pose().pose.orientation.w
+    
+            waypoints = []
+            waypoints.append(copy.deepcopy(self.pose))
+    
+            (plan, fraction) = self.g.compute_cartesian_path(
+                waypoints, 0.02, 0.0  # waypoints to follow  # eef_step
+            )  # jump_threshold
+
+            # print("Fraction: ", fraction)
+
+            return plan
     #Définir la position du TCP par la modification de la matrice d'état
     def set_pose_goal(self):
         
-        print("Envoi: ")
-        # print("x = ", self.pose.position.x)
-        # print("z = ", self.pose.position.z)
-        print("y = ", self.joints_values)
+        print("rot = ", self.joints_values)
 
         joints = self.g.get_current_joint_values()
 
         joints[0] = self.joints_values
-
+        
         # self.g.set_pose_target(self.pose)
-        self.g.set_joint_value_target(joints)
+        # self.g.set_joint_value_target(joints)
         # time.sleep(0.5)
-        self.success = self.g.go(wait=False)
+
+        self.success = self.g.go(joints, wait=False)
 
         self.g.stop()
         self.g.clear_pose_targets()
@@ -150,45 +200,47 @@ class TeleopNode:
         self.go_move = False
 
     # #Donne à l'arduino les données de position des axes (en brut de moveit)
+    # region
     # def send_to_arduino(self):
     #     self.pub.publish(self.g.get_current_joint_values())
     #     self.joints_values = self.g.get_current_joint_values()
     #     print(self.joints_values)
+    # endregion
 
     def execute_plan(self, plan):
         self.g.execute(plan, wait=False)
 
-
-        
 if __name__=='__main__':
     node = TeleopNode()
     while True:
-        time.sleep(0.1)
-        node.acquisition_joy
-        # node.plan_cartesian_path
-        if node.plan:
-            node.execute_plan(node.plan_cartesian_path())
-            node.plan = False
-            node.initialisation_pose
 
+        time.sleep(0.05)
+        node.acquisition_joy
+        if node.planz:
+            node.execute_plan(node.plan_cartesian_path_z())
+            node.planz = False
+
+            # time.sleep(0)
+            
+        if node.planr:
+            node.execute_plan(node.plan_cartesian_path_r())
+            # node.plan_cartesian_path_r()
+            node.planr = False
+
+            # time.sleep(0.1)
+            
         if node.rot:
             node.set_pose_goal()
             node.rot = False
 
+            # time.sleep(0.1)
+            
+        node.initialisation_joint()
+        node.initialisation_pose()
+        node.initialisation_r_theta()
+
+        # print("------\n",node.pose)
         
         
-        # #Calcul de la position demandée
-        # if node.go_move:
-        #     node.set_pose_goal()
-        #     print("Calcul demandé")
-        #     print(node.success)
-        
-        #Envoi des données à l'arduino si le calcul a réussi
-        # if node.success:
-        #     #node.send_to_arduino()
-        #     print("Données mise à jour pour l'arduino")
-        # else:
-        #     node.pub.publish(node.joints_values)
-        #     print("Echec de la résolution")
         
     rospy.spin()
