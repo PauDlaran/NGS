@@ -20,14 +20,15 @@ class TeleopNode:
         rospy.init_node("joystickbras")
     
         #Initialisation du subscriber
-        self.joy_sub = rospy.Subscriber('/joy', Joy, self.acquisition_joy)
+        self.joy_sub = rospy.Subscriber('/joy', Joy, self.acquisition_joy) #Queue size = 1 ??
 
-        # #Initialisation du publisher
-        # self.pub = rospy.Publisher('/com_arduino', String, queue_size=10)
-        # rospy.Rate(5)
+        #Initialisation du publisher
+        self.pub = rospy.Publisher('/com_arduino', String, queue_size=10)
+        rospy.Rate(5)
 
         #Initialisation de Moveit
         self.g = MoveGroupCommander("leo_arm")
+        self.h = MoveGroupCommander("leo_hand")
         self.pose = Pose()
         self.pose.position.x = self.g.get_current_pose().pose.position.x
         self.pose.position.y = self.g.get_current_pose().pose.position.y
@@ -35,17 +36,22 @@ class TeleopNode:
         self.pose.orientation = self.g.get_current_pose().pose.orientation
 
         self.joints_values = self.g.get_current_joint_values()[0]
+        self.joints_values_angle = self.g.get_current_joint_values()[3]
+        self.joint_values_pince = self.h.get_current_joint_values()[0]
+        
 
         self.success = False
         self.planr = False
         self.planz = False
         self.rot = False
+        self.planTCP = False
+        self.planPince = False
+        self.displacement = 0
 
         self.r, self.theta = self.calcul_r_theta(self.pose.position.x, self.pose.position.y)
 
         #Initialisation du pas de déplacement
-        self.pas = 0.005
-        self.pasA = 0.01
+        self.pas = 0.01
 
     def initialisation_pose(self):
         self.pose.position.x = self.g.get_current_pose().pose.position.x
@@ -58,38 +64,68 @@ class TeleopNode:
 
     def initialisation_joint(self):
         self.joints_values = self.g.get_current_joint_values()[0]
+        self.joints_values_angle = self.g.get_current_joint_values()[3]
+        self.joint_values_pince = self.h.get_current_joint_values()[0]
 
     def initialisation_r_theta(self):
         self.r, self.theta = self.calcul_r_theta(self.g.get_current_pose().pose.position.x, self.g.get_current_pose().pose.position.y)
    
     #Acquisition et traitement des données du joystick
     def acquisition_joy(self, joy_msg):
+        # time.sleep(0.1)
         axes = joy_msg.axes
         buttons = joy_msg.buttons
 
         #Incrémentation pour x tcp
         if axes[1] > 0:
-            self.r += self.pasA
+            self.r += self.pas
             self.planr = True
+            self.displacement = 1
         if axes[1] < 0:
-            self.r -= self.pasA
+            self.r -= self.pas
             self.planr = True
+            self.displacement = 1
+            
 
         #Incrémentation pour rot base (y)
         if axes[0] > 0:
             self.joints_values -= self.pas
             self.rot = True
+            self.displacement = 2
         if axes[0] < 0:
             self.joints_values += self.pas
             self.rot = True
+            self.displacement = 2
 
         #Incrémentation pour z tcp
         if buttons[2] != 0:
-            self.pose.position.z += self.pasA
+            self.pose.position.z += self.pas
             self.planz = True
+            self.displacement = 3
         if buttons[3] != 0:
-            self.pose.position.z -= self.pasA
+            self.pose.position.z -= self.pas
             self.planz = True
+            self.displacement = 3
+        
+        #Incrémentation pour angle tcp
+        if axes[5] > 0:
+            self.joints_values_angle += self.pas
+            self.planTCP = True
+            self.displacement = 4
+        if axes[5] < 0:
+            self.joints_values_angle -= self.pas
+            self.planTCP = True
+            self.displacement = 4
+
+        #Incrémentation pour pince
+        if buttons[0] != 0:
+            self.joint_values_pince += self.pas
+            self.planPince = True            
+            self.displacement = 5
+        if buttons[1] != 0:
+            self.joint_values_pince -= self.pas
+            self.planPince = True
+            self.displacement = 5
 
     def calcul_r_theta(self, x, y):
         r = math.sqrt(x**2 + y**2)
@@ -127,34 +163,70 @@ class TeleopNode:
             return plan
 
     #Définir la position du TCP par la modification de la matrice d'état
-    def set_pose_goal(self):
+    def set_pose_goal_base(self):
 
         joints = self.g.get_current_joint_values()
 
         joints[0] = self.joints_values
 
         self.success = self.g.go(joints, wait=False)
+        # time.sleep(0.2)
 
         self.g.stop()
         self.g.clear_pose_targets()
 
-    # #Donne à l'arduino les données de position des axes (en brut de moveit)
-    # region
-    # def send_to_arduino(self):
-    #     self.pub.publish(self.g.get_current_joint_values())
-    #     self.joints_values = self.g.get_current_joint_values()
-    #     print(self.joints_values)
-    # endregion
+    #Définir la position du TCP par la modification de la matrice d'état
+    def set_pose_goal_TCP(self):
+
+        joints = self.g.get_current_joint_values()
+
+        joints[3] = self.joints_values_angle
+
+        self.success = self.g.go(joints, wait=False)
+        # time.sleep(0.2)
+
+        self.g.stop()
+        self.g.clear_pose_targets()
+
+    def set_pose_goal_pince(self):
+            
+            joints = self.h.get_current_joint_values()
+    
+            joints[0] = self.joint_values_pince
+    
+            self.success = self.h.go(joints, wait=False)
+            # time.sleep(0.2)
+    
+            self.h.stop()
+            self.h.clear_pose_targets()
+
+    # #Donne à l'arduino les données de position des axes (en brut de moveit?)
+    def send_to_arduino(self):
+        self.joints_values_pub = self.g.get_current_joint_values(), self.h.get_current_joint_values()
+
+        self.pub.publish(str(self.joints_values_pub))
 
     def execute_plan(self, plan):
         self.g.execute(plan, wait=False)
 
 if __name__=='__main__':
     node = TeleopNode()
-    while True:
 
-        time.sleep(0.05)
+    displacement = node.displacement
+
+    while True:
+        # print("displacement : ", node.displacement)
+
+        if displacement != node.displacement:
+            node.initialisation_joint()
+            node.initialisation_pose()
+            node.initialisation_r_theta()
+            # print("changement de déplacement")
+
+        time.sleep(0.1)
+
         node.acquisition_joy
+
         if node.planz:
             node.execute_plan(node.plan_cartesian_path_z())
             node.planz = False
@@ -164,12 +236,21 @@ if __name__=='__main__':
             node.planr = False
             
         if node.rot:
-            node.set_pose_goal()
+            node.set_pose_goal_base()
             node.rot = False
+        
+        if node.planTCP:
+            node.set_pose_goal_TCP()
+            node.planTCP = False
+        
+        if node.planPince:
+            node.set_pose_goal_pince()
+            node.planPince = False
+
+        node.send_to_arduino()
             
-        node.initialisation_joint()
-        node.initialisation_pose()
-        node.initialisation_r_theta()
+        displacement = node.displacement
+        time.sleep(0.05)
         # print("------\n",node.pose)
         
     rospy.spin()
