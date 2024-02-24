@@ -13,6 +13,11 @@ Moveit:
             --> Annuler l'affcihage des datas?
             --> 
 
+            - Impossible de plannifier des déplacements proche de la base
+            --> Changer le plannificateur
+            --> Enlever les collisions
+            --> assouplir les règles
+
  - Implémenter nouveau modèle URDF | A refaire proprement, les modèles de Flo ne fonctionne pas, trop lourd? mal exporté?
 
  - Gerer mouvements de la pince | Implémentation du code pour gérer ses mouvements, OK, à voir comment interfacer avec nouveau modèle
@@ -26,7 +31,7 @@ Communication joint_value à l'arduino:
     (AJOUT DUN ARRET DURGENCE?)
     --> Implémentation par RORO et ELIAN
 
- - C'est tout?
+ - C'est tout?https://www.freecodecamp.org/news/setting-a-static-ip-in-ubuntu-linux-ip-address-tutorial/
 
 Rviz :
  - Mettre en place une config pour poste de pilotage
