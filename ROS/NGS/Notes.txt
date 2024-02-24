@@ -1,0 +1,3 @@
+Pour avoir une lecture en continue de joy:
+- rosrun joy joy_node _autorepeat_rate:=10
+

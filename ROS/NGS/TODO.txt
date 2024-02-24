@@ -1,0 +1,35 @@
+Moveit:
+ - Cinématique inverse avec joystick | OK
+    - Bug présent:
+            - Artecfact avec mouvements de retour en arrière sur certains déplacements
+            surement du à une erreur dans le programme. Acquisition des anciennes positions
+            et envoi juste après avoir envoyé les bonnes coordonnées
+            --> Mieux gérer l'acquisition des current positions
+            --> Attendre la fin du déplacement avant d'en plannifier un autre
+            -->
+
+ - Implémenter nouveau modèle URDF 
+
+ - Gerer mouvements de la pince
+
+ - Générer les positions auto et leurs macros (avec points de passage? -> coté + Derriere Haut)
+
+Communication joint_value à l'arduino:
+ - Publisher ces datas
+
+ - Reception par le code de communication de tram et donner à une certaine fréquence à l'arduino 
+    (AJOUT DUN ARRET DURGENCE?)
+    --> Implémentation par RORO et ELIAN
+
+ - C'est tout?
+
+Rviz :
+ - Mettre en place une config pour poste de pilotage
+
+Package + Launch:
+ - Comment créer un  package et les fichiers coeur associer + .Launch unique pour PosteDePilotage et pour Reception
+ - Lancer ce package au lancement de la RPi? (Pas obligatoire)
+
+RPi : 
+ - Comment fixer l'IP eth0 sur ubuntu
+ 
