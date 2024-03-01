@@ -42,3 +42,13 @@ Package + Launch:
 
 RPi : 
  - Comment fixer l'IP eth0 sur ubuntu | OK
+
+
+#############################################################
+
+Lundi:
+- S'assurer que le port eth0 du pc est toujours à la bonne IP
+- MàJ, ROS, Moveit, Code, Git, Lib, bashrc
+- Tester CAM et IHM
+
+===> PC SetUP
