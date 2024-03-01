@@ -18,11 +18,12 @@ Moveit:
             --> Enlever les collisions
             --> assouplir les règles
 
- - Implémenter nouveau modèle URDF | A refaire proprement, les modèles de Flo ne fonctionne pas, trop lourd? mal exporté?
+ - Implémenter nouveau modèle URDF | OK
+ - /!\ Limite des axes non gérée
 
- - Gerer mouvements de la pince | Implémentation du code pour gérer ses mouvements, OK, à voir comment interfacer avec nouveau modèle
+ - Gerer mouvements de la pince | OK
 
- - Générer les positions auto et leurs macros (avec points de passage? -> coté + Derriere Haut)
+ - Générer les positions auto et leurs macros (avec points de passage? -> coté + Derriere Haut) 
 
 Communication joint_value à l'arduino:
  - Publishe ces datas | OK publication des joint value en rad
@@ -31,14 +32,13 @@ Communication joint_value à l'arduino:
     (AJOUT DUN ARRET DURGENCE?)
     --> Implémentation par RORO et ELIAN
 
- - C'est tout?https://www.freecodecamp.org/news/setting-a-static-ip-in-ubuntu-linux-ip-address-tutorial/
 
 Rviz :
  - Mettre en place une config pour poste de pilotage
 
 Package + Launch:
- - Comment créer un  package et les fichiers coeur associer + .Launch unique pour PosteDePilotage et pour Reception
+ - Comment créer un  package et les fichiers coeur associer + .Launch unique pour PosteDePilotage et pour Reception 
  - Lancer ce package au lancement de la RPi? (Pas obligatoire)
 
 RPi : 
- - Comment fixer l'IP eth0 sur ubuntu | https://www.freecodecamp.org/news/setting-a-static-ip-in-ubuntu-linux-ip-address-tutorial/
+ - Comment fixer l'IP eth0 sur ubuntu | OK
