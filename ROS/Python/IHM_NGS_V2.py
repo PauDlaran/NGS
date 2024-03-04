@@ -15,7 +15,9 @@ import pyautogui
 import pdfplumber
 import csv
 #from qrcodes_ngs import VideoSubscriber
-# import pygetwindow as gw #alternative : pyxdg ?
+import gi
+gi.require_version('Wnck', '3.0')
+from gi.repository import Wnck
 
 import os
 
@@ -785,23 +787,33 @@ class IHM_NGS(customtkinter.CTk):
     def take_photo(self, event=0) : #TODO tester
         # Trouver la fenêtre par son titre
         #video_subscriber = VideoSubscriber()
-        """if self.latest_image is not None:
-            try:
-                stream_window = gw.getWindowsWithTitle("config_cam.rviz* - RViz")[0]
+        screen = Wnck.Screen.get_default()
+        screen.force_update()
 
-                # Prendre une capture d'écran de la fenêtre
+        found_window = None
+        for window in screen.get_windows():
+            if window.get_name() == "Cam1.rviz* - RViz":
+                found_window = window
+                break
+        if found_window :
+            x, y, width, height = found_window.get_geometry()
+            screenshot = pyautogui.screenshot(region=(x, y, width, height))
+            screenshot.save('/home/roman/Bureau/NGS/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
+
+        self.nom_image.append('C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
+        self.num_photo+=1 
+        print("Capture de la fenêtre réalisée et enregistrée sous le nom 'Photo_Sysm@p_"+str(self.num_photo)+".jpg'")
+
+        """stream_window = gw.getWindowsWithTitle("Cam"+self.n_cam.get())[0]
+
+            # Prendre une capture d'écran de la fenêtre
                 screenshot = pyautogui.screenshot(region=(stream_window.left, stream_window.top, stream_window.width, stream_window.height))
 
-                # Enregistrer l'image sur l'ordinateur
-                screenshot.save('C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
+            # Enregistrer l'image sur l'ordinateur
+                screenshot.save('/home/roman/Bureau/NGS/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
                 print("Image captured and saved in /home/labo-m/NGS/Rapports Sysm@p/Photos Sysm@p")
             except Exception as e:
-                print(e)
-        else:
-            print("Aucune image à capturer.")"""
-        #self.nom_image.append('C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
-        #self.num_photo+=1 
-        print("Capture de la fenêtre réalisée et enregistrée sous le nom 'Photo_Sysm@p_"+str(self.num_photo)+".jpg'")
+                print(e)"""
    
     def ouvre_ferme_pince(self, etat_pince, event=0):
         if etat_pince == 0:
