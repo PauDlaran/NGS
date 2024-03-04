@@ -1,0 +1,46 @@
+
+/!\ Attention à chaque coupure d'élétricité la Raspi prend un sale coup, essayer de les limiter au max! /!\
+
+PP = Poste de pilotage
+RPi = Raspberry pi
+Ard = Arduino
+
+I - Pour le PREMIER lancement de tests:
+
+1. Allumage du système, connexion en ssh avec la Raspberry (IP_Wifi=192.168.255.101, IP_LAN=192.0.0.4)
+
+2. PP | Ouvrir RVIZ avec la config caméra, permet de vérifier la bonne com entre topic
+
+3. PP | Ouvrir le roslaunch suivant: roslaunch pipoudou_moveit_config demo.launch
+
+4. PP | Lancer le noed Joy avec cette commande : rosrun joy joy_node _autorepeat_rate:=10
+
+5. RPi | Lancer le programme: main_arduino.py
+
+6. PP | Lancer l'IHM: IHM_NGS_V?.py, vérifier l'affichage des capteurs et le test de pipoudou_moveit_config
+
+--> PP & RPi setup pour lancer les programmes de déplacements du bras
+
+7. PP | Ouvrir les programmes de déplacements du bras souhaité:
+                - control_jointangle.py pour piloter chaque axe joint par joint
+                - joystick&bras_cartesian.py pour piloter le tcp et utiliser les positions pré-enregistrée
+
+
+II - Pour une COUPURE de test:
+
+1. PP & RPi | Couper proprement l'IHM, PUIS le programme sur la RPi
+
+1.1 Ard | Si modif à faire depuis pc, débrancher de la RPi et rebrancher en faisant attention aux artefacts de commande dans les moteurs
+
+2. PP & RPi | Relancer le programme de RPi, PUIS de l'IHM en vérifiant la bonne com capteurs et le ping
+
+
+III - Pour un BUG incompréhensible, on coupe tout les codes proprement en commençant par la RPi, puis le reste.
+
+IV - Pour un ARRET du système propre
+
+1. ref. III
+
+2. RPi | shutdown en ligne de commande
+
+3. GENERAL | On attent 20sec que la RPi soit etteinte et on peut couper le courrant.

@@ -118,6 +118,7 @@ class TeleopNode:
    
     #Acquisition et traitement des données du joystick
     def acquisition_joy(self, joy_msg):
+        #region
         # time.sleep(0.1)
         axes = joy_msg.axes
         buttons = joy_msg.buttons
@@ -187,7 +188,7 @@ class TeleopNode:
             self.joint_values_pince_main -= self.pas
             self.planPince_main = True
             self.displacement = 6
-
+        #endregion
         ######################################
         ## Déplacement automatique du bras ##
         ######################################
