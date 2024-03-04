@@ -12,15 +12,23 @@ from sensor_msgs.msg import Joy
 from std_msgs.msg import String
 from moveit_commander import MoveGroupCommander
 from geometry_msgs.msg import Pose
+from sensor_msgs.msg import JointState
+from moveit_msgs.msg import DisplayTrajectory
+
+import plan_auto
 
 class TeleopNode:
 
     def __init__(self):
+
+        self.my_plan = plan_auto.plan_auto()
+        
         #Création du noeud ROS
         rospy.init_node("joystickbras")
     
         #Initialisation du subscriber
         self.joy_sub = rospy.Subscriber('/joy', Joy, self.acquisition_joy) #Queue size = 1 ??
+        self.joint_sate_sub = rospy.Subscriber('/move_group/fake_controller_joint_states', JointState, self.chose_pose_to_plan)
 
         #Initialisation du publisher
         self.pub = rospy.Publisher('/com_arduino', String, queue_size=10)
@@ -61,7 +69,7 @@ class TeleopNode:
         self.ptn_pass = [0.0, -0.4764, 0.0, 2.0943]
         self.ptn_sortiepark = [-3.1, 0.0, -0.174, -0.177]
 
-        self.g.set_max_velocity_scaling_factor(0.1)
+        # self.g.set_max_velocity_scaling_factor(0.1)
 
         self.success = False
         self.planr = False
@@ -321,12 +329,14 @@ class TeleopNode:
         if autopose == 1:
 
             # ajout d'un pnt de passage au dessus du plexi?
-
+            self.ptn_auto_joint = self.my_plan.rec_auto_plan()
             joints =  self.joint_operationel
             self.success = self.g.go(joints, wait=True)
-
+            
             self.g.stop()
             self.g.clear_pose_targets()
+            print("plan_auto : ")
+            print(self.ptn_auto_joint)
 
         if autopose == 2:
             joints = self.joint_operationel
