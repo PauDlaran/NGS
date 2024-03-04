@@ -145,7 +145,6 @@ class TeleopNode:
             self.displacement = 5
             print("pince fermée")
 
-    #Définir la position du TCP par la modification de la matrice d'état
     def set_JointVal_axe1(self):
         joints = self.g.get_current_joint_values()
         joints[0] = self.joints_values_axe1
@@ -154,7 +153,6 @@ class TeleopNode:
         self.g.stop()
         self.g.clear_pose_targets()
 
-    #Définir la position du TCP par la modification de la matrice d'état
     def set_JointVal_axe4(self):
         joints = self.g.get_current_joint_values()
         joints[3] = self.joints_values_angle_axe4

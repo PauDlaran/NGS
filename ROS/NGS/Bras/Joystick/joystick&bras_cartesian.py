@@ -34,31 +34,34 @@ class TeleopNode:
         self.pub = rospy.Publisher('/com_arduino', String, queue_size=10)
         rospy.Rate(5)
 
-        #Initialisation de Moveit
+        #####Initialisation de Moveit
+        #Group
         self.g = MoveGroupCommander("pipoudou_arm")
         self.h = MoveGroupCommander("pipoudou_hand")
+
+        #Initial poses
         self.pose = Pose()
         self.pose.position.x = self.g.get_current_pose().pose.position.x
         self.pose.position.y = self.g.get_current_pose().pose.position.y
         self.pose.position.z = self.g.get_current_pose().pose.position.z
         self.pose.orientation = self.g.get_current_pose().pose.orientation
     
+        #Initial joints
+        self.joints_values_axe1 = self.g.get_current_joint_values()[0]
+        self.joints_values_axe4 = self.g.get_current_joint_values()[3]
 
-        self.joints_values = self.g.get_current_joint_values()[0]
-        self.joints_values_angle = self.g.get_current_joint_values()[3]
         self.joint_values_pince_main = self.h.get_current_joint_values()[0]
         self.joint_values_pince_doigt1 = self.h.get_current_joint_values()[1]
         self.joint_values_pince_doigt2 = self.h.get_current_joint_values()[2]
         self.joint_values_pince_doigt3 = self.h.get_current_joint_values()[3]
 
-        print(self.g.get_current_joint_values())
-        
-        ## Initialisation de position pince
+        ####Position préenregistrée (joints values [rad])
+        # Initialisation de position pince
         self.joint_pince_fermee = [0, 0.4488, 0, -0.4764]
         self.joint_pince_ouverte = [1.0472, 0.4488, 1.0472, 0.5672]
 
-        ## Initialisation de position bras
-        self.joint_parcking = [0.0, 0.0, 0.0, 0.0]
+        # Initialisation de position bras
+        self.joint_parking = [-3.15, 0.0, 0.0, 0.0]
         self.joint_operationel = [-1.555, 0.6924, -0.9283, -0.2161]
         self.joint_droit = [-1.5691, 0.9206, -2.7592, -0.2618]
         self.joint_pnt_passdroite = [-0.4862, -1.1506, 0.6397, 0.0]
@@ -69,26 +72,30 @@ class TeleopNode:
         self.ptn_pass = [0.0, -0.4764, 0.0, 2.0943]
         self.ptn_sortiepark = [-3.1, 0.0, -0.174, -0.177]
 
-        # self.g.set_max_velocity_scaling_factor(0.1)
-
+        #Variable pour connaitre l'axe à déplacer
         self.success = False
         self.planr = False
         self.planz = False
-        self.rot = False
-        self.planTCP = False
+        self.axe1 = False
+        self.plan_axe4 = False
         self.planPince_doigts = False
         self.planPince_main = False
+
         self.planAuto = False
         self.displacement = 0
 
         self.auto_pose = 0
 
+        #Initialisation de la position du bras en POLAIRE
         self.r, self.theta = self.calcul_r_theta(self.pose.position.x, self.pose.position.y)
 
         #Initialisation du pas de déplacement
         self.pas = 0.005
         self.pasA= 0.005
 
+    #CODE FONCTIONNEL
+    #region
+    #Init de toutes les positions pour éviter les problèmes lors de changements de type de coordonnées
     def initialisation_pose(self):
         self.pose.position.x = self.g.get_current_pose().pose.position.x
         self.pose.position.y = self.g.get_current_pose().pose.position.y
@@ -99,8 +106,8 @@ class TeleopNode:
         self.pose.orientation.w = self.g.get_current_pose().pose.orientation.w
 
     def initialisation_joint(self):
-        self.joints_values = self.g.get_current_joint_values()[0]
-        self.joints_values_angle = self.g.get_current_joint_values()[3]
+        self.joints_values_axe1 = self.g.get_current_joint_values()[0]
+        self.joints_values_axe4 = self.g.get_current_joint_values()[3]
         self.joint_values_pince_main = self.h.get_current_joint_values()[0]
         self.joint_values_pince_doigt1 = self.h.get_current_joint_values()[1]
         self.joint_values_pince_doigt2 = self.h.get_current_joint_values()[2]
@@ -126,14 +133,14 @@ class TeleopNode:
             self.displacement = 1
             
 
-        #Incrémentation pour rot base (y)
-        if axes[0] > 0 and -3.1515 <= self.joints_values <= 2.96706:
-            self.joints_values -= self.pas
-            self.rot = True
+        #Incrémentation pour axe1 base (y)
+        if axes[0] > 0 and -3.1515 <= self.joints_values_axe1 <= 2.96706:
+            self.joints_values_axe1 -= self.pas
+            self.axe1 = True
             self.displacement = 2
-        if axes[0] < 0 and -3.1515 <= self.joints_values <= 2.96706:
-            self.joints_values += self.pas
-            self.rot = True
+        if axes[0] < 0 and -3.1515 <= self.joints_values_axe1 <= 2.96706:
+            self.joints_values_axe1 += self.pas
+            self.axe1 = True
             self.displacement = 2
 
         #Incrémentation pour z tcp
@@ -147,13 +154,13 @@ class TeleopNode:
             self.displacement = 3
         
         #Incrémentation pour angle tcp
-        if axes[5] > 0 and -1.35 < self.joints_values_angle < 1.35:
-            self.joints_values_angle += self.pas
-            self.planTCP = True
+        if axes[5] > 0 and -1.35 < self.joints_values_axe4 < 1.35:
+            self.joints_values_axe4 += self.pas
+            self.plan_axe4 = True
             self.displacement = 4
-        if axes[5] < 0 and -1.35 < self.joints_values_angle < 1.35:
-            self.joints_values_angle -= self.pas
-            self.planTCP = True
+        if axes[5] < 0 and -1.35 < self.joints_values_axe4 < 1.35:
+            self.joints_values_axe4 -= self.pas
+            self.plan_axe4 = True
             self.displacement = 4
 
         #Incrémentation pour pince
@@ -227,102 +234,93 @@ class TeleopNode:
             self.displacement = 7
             self.planAuto = True
 
+    ####Calculs
+    #Calculs des coordonnées polaires
     def calcul_r_theta(self, x, y):
         r = math.sqrt(x**2 + y**2)
         theta = 2 * math.atan(y/(x+math.sqrt(x*x+y*y)))
         return r, theta
  
+    #Calculs des coordonnées cartésiennes
     def polar_to_cartesian(self, r, theta):
         x = r * math.cos(theta)
         y = r * math.sin(theta)
         return x, y
 
+    ####Planification
+    ##BRAS
+    #Plan selon l'axe du bras (r en coordonées polaire)
     def plan_cartesian_path_r(self):
+        #Conversion des coordonnées polaires en cartésiennes
+        self.pose.position.x, self.pose.position.y = self.polar_to_cartesian(self.r, self.theta)
 
-        r = self.r
-        theta = self.theta
-
-        waypoints = []
-        self.pose.position.x, self.pose.position.y = self.polar_to_cartesian(r, theta)
-        
+        #Plan
+        waypoints = []       
         waypoints.append(copy.deepcopy(self.pose))
-
         (plan, fraction) = self.g.compute_cartesian_path(
-            waypoints, 0.02, 0.0  # waypoints to follow  # eef_step
-        )
+            waypoints, 0.02, 0.0)
         return plan
     
+    #Plan selon l'axe z
     def plan_cartesian_path_z(self):
-            
         waypoints = []
         waypoints.append(copy.deepcopy(self.pose))
-
         (plan, fraction) = self.g.compute_cartesian_path(
-            waypoints, 0.02, 0.0 
-        )
+            waypoints, 0.02, 0.0)
         return plan
 
-    #Définir la position du TCP par la modification de la matrice d'état
-    def set_pose_goal_base(self):
-
+    #Plan selon la rotation de l'axe1 (base)
+    def set_JointVal_axe1(self):
         joints = self.g.get_current_joint_values()
-
-        joints[0] = self.joints_values
-
+        joints[0] = self.joints_values_axe1
         self.success = self.g.go(joints, wait=False)
         # time.sleep(0.2)
-
         self.g.stop()
         self.g.clear_pose_targets()
 
-    #Définir la position du TCP par la modification de la matrice d'état
-    def set_pose_goal_TCP(self):
-
+    #Plan selon la rotation de l'axe4
+    def set_JointVal_axe4(self):
         joints = self.g.get_current_joint_values()
-
-        joints[3] = self.joints_values_angle
-
+        joints[3] = self.joints_values_axe4
         self.success = self.g.go(joints, wait=False)
         # time.sleep(0.2)
-
         self.g.stop()
         self.g.clear_pose_targets()
 
+    ##PINCE
+    #Plan des doigts de la pince (n'est en réalité qu'un moteur, mais necessaire pour la simulation)
     def set_pose_goal_pince_doigts(self):
-            
-            joints = self.h.get_current_joint_values()
+        joints = self.h.get_current_joint_values()
+        joints[1] = self.joint_values_pince_doigt1
+        joints[2] = self.joint_values_pince_doigt2
+        joints[3] = self.joint_values_pince_doigt3
+        self.success = self.h.go(joints, wait=False)
+        # time.sleep(0.2)
+        self.h.stop()
+        self.h.clear_pose_targets()
 
-            joints[1] = self.joint_values_pince_doigt1
-            joints[2] = self.joint_values_pince_doigt2
-            joints[3] = self.joint_values_pince_doigt3
-    
-            self.success = self.h.go(joints, wait=False)
-            # time.sleep(0.2)
-    
-            self.h.stop()
-            self.h.clear_pose_targets()
-
+    #Plan pour le poignet de la pince (+/- 120°)
     def set_pose_goal_pince_main(self):
-                
-                joints = self.h.get_current_joint_values()
-    
-                joints[0] = self.joint_values_pince_main
-        
-                self.success = self.h.go(joints, wait=False)
-                # time.sleep(0.2)
-        
-                self.h.stop()
-                self.h.clear_pose_targets()
+        joints = self.h.get_current_joint_values()
+        joints[0] = self.joint_values_pince_main
+        self.success = self.h.go(joints, wait=False)
+        # time.sleep(0.2)
+        self.h.stop()
+        self.h.clear_pose_targets()
 
-    # #Donne à l'arduino les données de position des axes (en brut de moveit?)
+    #Donne à l'arduino les données de position des axes en brut de moveit (radian), la conversion se fait dans la RPi
     def send_to_arduino(self):
         self.joints_values_pub = self.g.get_current_joint_values(), self.h.get_current_joint_values()
 
         self.pub.publish(str(self.joints_values_pub))
 
+    #Exécution du plan selon la position du TCP (carthésien)
     def execute_plan(self, plan):
         self.g.execute(plan, wait=False)
 
+    #endregion
+
+    #Tentative de planification auto, grâce à des points prédéfinies (parking, opérationnel, ...)
     def chose_pose_to_plan(self, autopose):
         joints = self.g.get_current_joint_values()
 
@@ -380,13 +378,13 @@ if __name__=='__main__':
             node.execute_plan(node.plan_cartesian_path_r())
             node.planr = False
             
-        if node.rot:
-            node.set_pose_goal_base()
-            node.rot = False
+        if node.axe1:
+            node.set_JointVal_axe1()
+            node.axe1 = False
         
-        if node.planTCP:
-            node.set_pose_goal_TCP()
-            node.planTCP = False
+        if node.plan_axe4:
+            node.set_JointVal_axe4()
+            node.plan_axe4 = False
         
         if node.planPince_doigts:
             node.set_pose_goal_pince_doigts()
