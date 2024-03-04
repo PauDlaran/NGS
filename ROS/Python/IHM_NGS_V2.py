@@ -15,7 +15,7 @@ import pyautogui
 import pdfplumber
 import csv
 #from qrcodes_ngs import VideoSubscriber
-#import pygetwindow as gw #alternative : pyxdg ?
+import pygetwindow as gw #alternative : pyxdg ?
 
 import os
 
@@ -787,7 +787,7 @@ class IHM_NGS(customtkinter.CTk):
         #video_subscriber = VideoSubscriber()
         if self.latest_image is not None:
             try:
-                stream_window = gw.getWindowsWithTitle("Cam")[0]
+                stream_window = gw.getWindowsWithTitle("config_cam.rviz* - RViz")[0]
 
                 # Prendre une capture d'écran de la fenêtre
                 screenshot = pyautogui.screenshot(region=(stream_window.left, stream_window.top, stream_window.width, stream_window.height))
