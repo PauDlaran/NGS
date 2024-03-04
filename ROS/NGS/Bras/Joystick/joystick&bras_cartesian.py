@@ -1,8 +1,19 @@
-# Description: Noeud ROS permettant de contrôler le bras robotique LEO avec un joystick
-# Pub : 
-#   - /com_arduino (std_msgs/String) : Envoi des données de position des axes du bras à l'arduino
-# Sub :
-#   - /joy (sensor_msgs/Joy) : Acquisition des données du joystick
+""" 
+Code principale du groupe NGS
+
+Description: Noeud ROS permettant de contrôler le bras robotique LEO avec un joystick selon de manières
+    - Déplacement en coordonnées cartésiennes et joints pour les rotations
+    - Déplacement automatique vers des points prédéfinis
+
+Pub : 
+   - /com_arduino (std_msgs/String) : Envoi des données de position des axes du bras à l'arduino
+Sub :
+   - /joy (sensor_msgs/Joy) : Acquisition des données du joystick
+
+Projet Fil Rouge, Sysm@p | Groupe NGS 
+Paul Daran MKX07
+Fev 2024
+"""
 
 import rospy
 import math
@@ -13,22 +24,20 @@ from std_msgs.msg import String
 from moveit_commander import MoveGroupCommander
 from geometry_msgs.msg import Pose
 from sensor_msgs.msg import JointState
-from moveit_msgs.msg import DisplayTrajectory
+from moveit_msgs.msg import MoveGroupActionResult
 
 import plan_auto
 
 class TeleopNode:
 
     def __init__(self):
-
-        self.my_plan = plan_auto.plan_auto()
-        
         #Création du noeud ROS
         rospy.init_node("joystickbras")
     
         #Initialisation du subscriber
         self.joy_sub = rospy.Subscriber('/joy', Joy, self.acquisition_joy) #Queue size = 1 ??
         self.joint_sate_sub = rospy.Subscriber('/move_group/fake_controller_joint_states', JointState, self.chose_pose_to_plan)
+        self.move_group_result_sub = rospy.Subscriber('/move_group/result', MoveGroupActionResult, self.move_group_callback)    
 
         #Initialisation du publisher
         self.pub = rospy.Publisher('/com_arduino', String, queue_size=10)
@@ -321,37 +330,50 @@ class TeleopNode:
 
     #endregion
 
+    #Fonction de rappel pour '/move_group/result'
+    def move_group_callback(self, data):
+        self.REC_success_plan = data.result.error_code.val #Si ==1, alors plannification réussie
+        self.REC_joint_position = data.result.planned_trajectory.joint_trajectory.points #Position des joints
+        self.REC_nmbr_frame = len(self.REC_joint_position) #Nombre de frames
+
+    
     #Tentative de planification auto, grâce à des points prédéfinies (parking, opérationnel, ...)
     def chose_pose_to_plan(self, autopose):
         joints = self.g.get_current_joint_values()
 
-        if autopose == 1:
+        ####Réalise le déplacement dans la simu selon le point choisi
+        #Z au dessus de parcking
+        if autopose == 1:            
+            joints =  self.ptn_sortiepark
 
-            # ajout d'un pnt de passage au dessus du plexi?
-            self.ptn_auto_joint = self.my_plan.rec_auto_plan()
-            joints =  self.joint_operationel
             self.success = self.g.go(joints, wait=True)
-            
             self.g.stop()
             self.g.clear_pose_targets()
-            print("plan_auto : ")
-            print(self.ptn_auto_joint)
 
+        #Opérationnel
         if autopose == 2:
             joints = self.joint_operationel
+
             self.success = self.g.go(joints, wait=True)
             self.g.stop()
             self.g.clear_pose_targets()
         
+        #Pnt de passage droite
         if autopose == 3:
             joints = self.ptn_pass
-            self.success = self.g.go(joints, wait=True)
-
-            joints = self.ptn_passhaut
-
+            
             self.success = self.g.go(joints, wait=True)
             self.g.stop()
             self.g.clear_pose_targets()
+
+        #
+
+        #Envoi les coordonées des joints à l'arduino avec les données enregistrés
+        for i in range(self.REC_nmbr_frame):
+            self.joints_values_pub = self.REC_joint_position[i].positions, self.h.get_current_joint_values()
+            self.pub.publish(str(self.joints_values_pub))
+            time.sleep(0.1)
+        
 
 
 if __name__=='__main__':
@@ -368,40 +390,42 @@ if __name__=='__main__':
             # print("changement de déplacement")
 
         time.sleep(0.1)
-
         node.acquisition_joy
-
-        if node.planz:
-            node.execute_plan(node.plan_cartesian_path_z())
-            node.planz = False
-            
-        if node.planr:
-            node.execute_plan(node.plan_cartesian_path_r())
-            node.planr = False
-            
-        if node.axe1:
-            node.set_JointVal_axe1()
-            node.axe1 = False
         
-        if node.plan_axe4:
-            node.set_JointVal_axe4()
-            node.plan_axe4 = False
-        
-        if node.planPince_doigts:
-            node.set_pose_goal_pince_doigts()
-            node.planPince_doigts = False
-        
-        if node.planPince_main:
-            node.set_pose_goal_pince_main()
-            node.planPince_main = False
-
+        #Controle position pré-enregistrée
         if node.planAuto:
             node.chose_pose_to_plan(node.auto_pose)
             node.planAuto = False
 
-        node.send_to_arduino()
-        time.sleep(1)
+        #Controle Joystick
+        else:
+            if node.planz:
+                node.execute_plan(node.plan_cartesian_path_z())
+                node.planz = False
+                
+            if node.planr:
+                node.execute_plan(node.plan_cartesian_path_r())
+                node.planr = False
+                
+            if node.axe1:
+                node.set_JointVal_axe1()
+                node.axe1 = False
             
+            if node.plan_axe4:
+                node.set_JointVal_axe4()
+                node.plan_axe4 = False
+            
+            if node.planPince_doigts:
+                node.set_pose_goal_pince_doigts()
+                node.planPince_doigts = False
+            
+            if node.planPince_main:
+                node.set_pose_goal_pince_main()
+                node.planPince_main = False
+
+            node.send_to_arduino()
+            time.sleep(1)
+
         displacement = node.displacement
         time.sleep(0.05)
         # print("------\n",node.pose)

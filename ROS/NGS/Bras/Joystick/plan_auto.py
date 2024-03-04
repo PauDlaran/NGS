@@ -28,15 +28,17 @@ class plan_auto:
     def move_group_callback(self, data):
         # Fonction de rappel pour '/move_group/result'
         # print(data)
-        # print(data.result.planned_trajectory.joint_trajectory.points[0].positions)
+        print(data.status.status)
+        points = data.result.planned_trajectory.joint_trajectory.points
         print("nombre de frames: ")
         print(len(data.result.planned_trajectory.joint_trajectory.points))
-        print("position des joints: ")
-        print(data.result.planned_trajectory.joint_trajectory.points[0].positions)
-        print(data.result.planned_trajectory.joint_trajectory.points[1].positions)
-        print(data.result.planned_trajectory.joint_trajectory.points[2].positions)
-        print(data.result.planned_trajectory.joint_trajectory.points[3].positions)
-        print(data.result.planned_trajectory.joint_trajectory.points[4].positions)
+        # print("position des joints: ")
+        # print(data.result.planned_trajectory.joint_trajectory.points)
+        
+        print(points[4].positions)
+        # print(data.result.planned_trajectory.joint_trajectory.points[2].positions)
+        # print(data.result.planned_trajectory.joint_trajectory.points[3].positions)
+        # print(data.result.planned_trajectory.joint_trajectory.points[4].positions)
 
         if data.result.error_code.val == 1:
             self.mouvement_en_cours = False
@@ -70,7 +72,7 @@ class plan_auto:
         joints = self.joint_operationel
         # joints = self.joint_droit
 
-        self.success = self.g.go(joints, wait=True)
+        self.success = self.g.go(joints, wait=False)
         # time.sleep(0.2)
 
         self.g.stop()
