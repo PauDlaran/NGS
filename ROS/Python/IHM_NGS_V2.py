@@ -787,24 +787,20 @@ class IHM_NGS(customtkinter.CTk):
         #video_subscriber = VideoSubscriber()
         if self.latest_image is not None:
             try:
-                # Sauvegarder l'image la plus récente
-                #Screen.image_callback()
-                #cv2.imwrite('C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg', self.latest_image)
+                stream_window = gw.getWindowsWithTitle("Cam")[0]
+
+                # Prendre une capture d'écran de la fenêtre
+                screenshot = pyautogui.screenshot(region=(stream_window.left, stream_window.top, stream_window.width, stream_window.height))
+
+                # Enregistrer l'image sur l'ordinateur
+                screenshot.save('C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
                 print("Image captured and saved in /home/labo-m/NGS/Rapports Sysm@p/Photos Sysm@p")
             except Exception as e:
                 print(e)
         else:
             print("Aucune image à capturer.")
-        """
-        stream_window = gw.getWindowsWithTitle("Cam"+self.n_cam.get())[0]
-
-        # Prendre une capture d'écran de la fenêtre
-        screenshot = pyautogui.screenshot(region=(stream_window.left, stream_window.top, stream_window.width, stream_window.height))
-
-        # Enregistrer l'image sur l'ordinateur
-        screenshot.save('C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')"""
-        self.nom_image.append('C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
-        self.num_photo+=1 
+        #self.nom_image.append('C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
+        #self.num_photo+=1 
         print("Capture de la fenêtre réalisée et enregistrée sous le nom 'Photo_Sysm@p_"+str(self.num_photo)+".jpg'")
    
     def ouvre_ferme_pince(self, etat_pince, event=0):
