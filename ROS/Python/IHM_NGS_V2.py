@@ -15,7 +15,7 @@ import pyautogui
 import pdfplumber
 import csv
 #from qrcodes_ngs import VideoSubscriber
-import pygetwindow as gw #alternative : pyxdg ?
+# import pygetwindow as gw #alternative : pyxdg ?
 
 import os
 
@@ -785,7 +785,7 @@ class IHM_NGS(customtkinter.CTk):
     def take_photo(self, event=0) : #TODO tester
         # Trouver la fenêtre par son titre
         #video_subscriber = VideoSubscriber()
-        if self.latest_image is not None:
+        """if self.latest_image is not None:
             try:
                 stream_window = gw.getWindowsWithTitle("config_cam.rviz* - RViz")[0]
 
@@ -798,7 +798,7 @@ class IHM_NGS(customtkinter.CTk):
             except Exception as e:
                 print(e)
         else:
-            print("Aucune image à capturer.")
+            print("Aucune image à capturer.")"""
         #self.nom_image.append('C:/Users/roman/OneDrive/Bureau/Photos Sysm@p/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
         #self.num_photo+=1 
         print("Capture de la fenêtre réalisée et enregistrée sous le nom 'Photo_Sysm@p_"+str(self.num_photo)+".jpg'")
