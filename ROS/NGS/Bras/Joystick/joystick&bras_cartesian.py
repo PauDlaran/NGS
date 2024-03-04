@@ -254,13 +254,13 @@ class TeleopNode:
     
     def plan_cartesian_path_z(self):
             
-            waypoints = []
-            waypoints.append(copy.deepcopy(self.pose))
-    
-            (plan, fraction) = self.g.compute_cartesian_path(
-                waypoints, 0.02, 0.0 
-            )
-            return plan
+        waypoints = []
+        waypoints.append(copy.deepcopy(self.pose))
+
+        (plan, fraction) = self.g.compute_cartesian_path(
+            waypoints, 0.02, 0.0 
+        )
+        return plan
 
     #Définir la position du TCP par la modification de la matrice d'état
     def set_pose_goal_base(self):
