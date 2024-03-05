@@ -332,7 +332,7 @@ class IHM_NGS(customtkinter.CTk):
                                                         )
         self.qr_code3.grid(row=8, column=1, pady=10, padx=20)          
 
-        self.image = PIL.Image.open("/home/polo/Downloads/1.png")
+        self.image = PIL.Image.open("./photo_ihm/1.png")
         self.image_Tk = ImageTk.PhotoImage(self.image)
         self.image_label = customtkinter.CTkLabel(master = self.frame_prepa_mission2, image=self.image_Tk, text="")
         self.image_label.image = self.image_Tk
