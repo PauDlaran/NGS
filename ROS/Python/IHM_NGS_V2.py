@@ -209,12 +209,6 @@ class IHM_NGS(customtkinter.CTk):
                                                     font=("Roboto Medium", 20))
         self.label_acceuil.grid(row=0, column=0, pady=10, padx=20)
 
-        self.bouton_puissance = customtkinter.CTkButton(master = self.frame_accueil, text="Puissance", 
-                                               fg_color = ("black"),
-                                               command=self.Envoi_Puissance
-                                            )
-        self.bouton_puissance.grid(row=2, column=0, pady=10, padx=20)
-
         self.logo_NGS = customtkinter.CTkLabel(master = self.frame_info,
                                                     text="NGS",
                                                     font=("Roboto Medium", 200))
@@ -626,6 +620,24 @@ class IHM_NGS(customtkinter.CTk):
                                                fg_color = ("gray75"), text_color= ("black"),
                                                command=lambda: self.afficher_tracabilite("Stockage3"))
         self.bouton_traçabilite_3.grid(row=2, column=0, pady=10, padx=20)
+    
+    #==== frame_fin_mission ====
+        
+        self.frame_fin = customtkinter.CTkFrame(master = self.frame_info)
+        self.frame_fin.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
+
+        self.frame_fin.columnconfigure(0, weight=1)
+        self.frame_fin.rowconfigure(1, weight=1)
+
+        self.label_fin = customtkinter.CTkLabel(master = self.frame_fin,
+                                                    text="\n\nFin du projet Sysm@p NGS \n\nVeuillez éteindre le programme NGS\n\n",
+                                                    font=("Roboto Medium", 20))
+        self.label_fin.grid(row=0, column=0, pady=10, padx=20)
+
+        self.bouton_puissance = customtkinter.CTkButton(master = self.frame_fin, text="Eteindre le système",    
+                                                        fg_color = ("red"),
+                                                        command=self.Ferme_Puissance)
+        self.bouton_puissance.grid(row=2, column=0, pady=10, padx=20)
         
     def afficher_state(self, event=0):
         self.bouton_preparation.configure(fg_color = "gray75")
@@ -636,6 +648,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_traçabilite.grid_forget()
         self.frame_prepa_mission.grid_forget()
         self.frame_stockage.grid_forget()
+        self.frame_fin.grid_forget()
         self.frame_affichage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
         self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 300,ipady = 400)
 
@@ -648,6 +661,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_affichage.grid_forget()
         self.frame_prepa_mission.grid_forget()
         self.frame_stockage.grid_forget()
+        self.frame_fin.grid_forget()
         self.frame_traçabilite.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
         self.dernier_bouton_clique = button
 
@@ -675,6 +689,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_affichage.grid_forget()
         self.frame_traçabilite.grid_forget()
         self.frame_stockage.grid_forget()
+        self.frame_fin.grid_forget()
         self.frame_prepa_mission.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
         self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 350)
 
@@ -687,6 +702,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_affichage.grid_forget()
         self.frame_traçabilite.grid_forget()
         self.frame_prepa_mission.grid_forget()
+        self.frame_fin.grid_forget()
         self.frame_stockage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
         self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 505)
         
@@ -695,11 +711,12 @@ class IHM_NGS(customtkinter.CTk):
         self.bouton_preparation.configure(fg_color = "gray75")
         self.bouton_stockage.configure(fg_color = "gray75")
         self.bouton_fin_de_mission.configure(fg_color = "green")
-        self.frame_accueil.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
+        self.frame_accueil.grid_forget()
         self.frame_affichage.grid_forget()
         self.frame_traçabilite.grid_forget()
         self.frame_prepa_mission.grid_forget()
         self.frame_stockage.grid_forget()
+        self.frame_fin.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
         self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 565)
 
     def generateQrCode(self, data, event=0):
@@ -919,14 +936,8 @@ class IHM_NGS(customtkinter.CTk):
             self.bouton_ouverture_2.grid()
             self.bouton_ouverture_3.grid()
     
-    def Envoi_Puissance(self, event=0) :
-        if self.bouton_puissance.cget("fg_color") == "red" :
-            self.publier_commande("Arret Puissance")
-            self.bouton_puissance.configure(fg_color = "red")
-        if self.bouton_puissance.cget("fg_color") == "green" :
-            self.publier_commande("Puissance")
-            self.bouton_puissance.configure(fg_color = "green")
-
+    def Ferme_Puissance(self, event=0) :
+        self.publier_commande("SHUTDOWN")
     
     def change_numero_prelevement(self, event=0):
         if self.n_prelev.get() == "1" :
