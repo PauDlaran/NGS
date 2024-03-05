@@ -1019,7 +1019,7 @@ class IHM_NGS(customtkinter.CTk):
             self.bouton_moteur_5.configure(fg_color = "red")
         #recep arduino
 
-    def moteurp(self, event=0):
+    def moteurP(self, event=0):
         if self.MP == 0:
             self.MP = 1
             self.publier_commande("ENAP")
