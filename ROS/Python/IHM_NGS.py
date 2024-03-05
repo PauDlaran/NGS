@@ -1146,11 +1146,11 @@ class IHM_NGS(customtkinter.CTk):
         if data.data.startswith("temp_ext"):
             self.value_temp_ext.configure(text=data.data.split("=")[-1] + "°C")
         if data.data.startswith("inertie_X"):
-            self.value_inertie_X.configure(text=data.data.split("=")[-1])
+            self.value_inertie_X.configure(text=str(int(data.data.split("=")[-1])-1))
         if data.data.startswith("inertie_Y"):
-            self.value_inertie_Y.configure(text=data.data.split("=")[-1])
+            self.value_inertie_Y.configure(text=str(int(data.data.split("=")[-1])-1))
         if data.data.startswith("inertie_Z"):
-            self.value_inertie_Z.configure(text=data.data.split("=")[-1])
+            self.value_inertie_Z.configure(text=str(int(data.data.split("=")[-1])-1))
         if data.data.startswith("init_bras_1"):
             value = data.data.split("=")[-1]
             if value == "0" :
