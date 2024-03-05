@@ -428,7 +428,8 @@ class TeleopNode:
             for i in range(len(self.REC_joint_position)):
                 self.joints_values_pub = self.REC_joint_position[i].positions, self.h.get_current_joint_values()
                 self.pub.publish(str(self.joints_values_pub))
-                time.sleep(0.1)
+                time.sleep(2)
+                print("tram send")
             self.REC_success_plan = 0
             self.REC_joint_position = [0]
         else:
