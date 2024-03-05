@@ -1142,9 +1142,9 @@ class IHM_NGS(customtkinter.CTk):
     def callback(self, data) :
         time.sleep(0.01)
         if data.data.startswith("temp_int"):
-            self.value_temp_int.configure(text=data.data.split("=")[-1])
+            self.value_temp_int.configure(text=data.data.split("=")[-1] + "°C")
         if data.data.startswith("temp_ext"):
-            self.value_temp_ext.configure(text=data.data.split("=")[-1])
+            self.value_temp_ext.configure(text=data.data.split("=")[-1] + "°C")
         if data.data.startswith("inertie_X"):
             self.value_inertie_X.configure(text=data.data.split("=")[-1])
         if data.data.startswith("inertie_Y"):
