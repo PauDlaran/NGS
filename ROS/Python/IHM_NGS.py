@@ -332,7 +332,7 @@ class IHM_NGS(customtkinter.CTk):
                                                         )
         self.qr_code3.grid(row=8, column=1, pady=10, padx=20)          
 
-        self.image = PIL.Image.open("/media/roman/04EB-C7FF1/SYSM@P/photo sysmap ihm redimensionnée.png")
+        self.image = PIL.Image.open("/home/polo/Pictures/photo.png")
         self.image_Tk = ImageTk.PhotoImage(self.image)
         self.image_label = customtkinter.CTkLabel(master = self.frame_prepa_mission2, image=self.image_Tk, text="")
         self.image_label.image = self.image_Tk
@@ -969,10 +969,11 @@ class IHM_NGS(customtkinter.CTk):
             self.M1 = 1
             self.publier_commande("ENA1")
             self.bouton_moteur_1.configure(fg_color = "green")
-        if self.M1 == 1:
-            self.M1 = 0
-            self.publier_commande("ENA1_OFF")
-            self.bouton_moteur_1.configure(fg_color = "red")
+        else:
+            if self.M1 == 1:
+                self.M1 = 0
+                self.publier_commande("ENA1_OFF")
+                self.bouton_moteur_1.configure(fg_color = "red")
         #recep arduino
 
     def moteur2(self, event=0):
@@ -980,10 +981,11 @@ class IHM_NGS(customtkinter.CTk):
             self.M2 = 1
             self.publier_commande("ENA2")
             self.bouton_moteur_2.configure(fg_color = "green")
-        if self.M2 == 1:
-            self.M2 = 0
-            self.publier_commande("ENA2_OFF")
-            self.bouton_moteur_2.configure(fg_color = "red")
+        else :
+            if self.M2 == 1:
+                self.M2 = 0
+                self.publier_commande("ENA2_OFF")
+                self.bouton_moteur_2.configure(fg_color = "red")
         #recep arduino
 
     def moteur3(self, event=0): 
@@ -991,10 +993,11 @@ class IHM_NGS(customtkinter.CTk):
             self.M3 = 1
             self.publier_commande("ENA3")
             self.bouton_moteur_3.configure(fg_color = "green")
-        if self.M3 == 1:
-            self.M3 = 0
-            self.publier_commande("ENA3_OFF")
-            self.bouton_moteur_3.configure(fg_color = "red")
+        else :
+            if self.M3 == 1:
+                self.M3 = 0
+                self.publier_commande("ENA3_OFF")
+                self.bouton_moteur_3.configure(fg_color = "red")
         #recep arduino
 
     def moteur4(self, event=0):
@@ -1002,10 +1005,11 @@ class IHM_NGS(customtkinter.CTk):
             self.M4 = 1
             self.publier_commande("ENA4")
             self.bouton_moteur_4.configure(fg_color = "green")
-        if self.M4 == 1:
-            self.M4 = 0
-            self.publier_commande("ENA4_OFF")
-            self.bouton_moteur_4.configure(fg_color = "red")
+        else :
+            if self.M4 == 1:
+                self.M4 = 0
+                self.publier_commande("ENA4_OFF")
+                self.bouton_moteur_4.configure(fg_color = "red")
         #recep arduino
 
     def moteur5(self, event=0):
@@ -1013,10 +1017,11 @@ class IHM_NGS(customtkinter.CTk):
             self.M5 = 1
             self.publier_commande("ENA5")
             self.bouton_moteur_5.configure(fg_color = "green")
-        if self.M5 == 1:
-            self.M5 = 0
-            self.publier_commande("ENA5_OFF")
-            self.bouton_moteur_5.configure(fg_color = "red")
+        else :
+            if self.M5 == 1:
+                self.M5 = 0
+                self.publier_commande("ENA5_OFF")
+                self.bouton_moteur_5.configure(fg_color = "red")
         #recep arduino
 
     def moteurP(self, event=0):
@@ -1024,10 +1029,11 @@ class IHM_NGS(customtkinter.CTk):
             self.MP = 1
             self.publier_commande("ENAP")
             self.bouton_moteur_p.configure(fg_color = "green")
-        if self.MP == 1:
-            self.MP = 0
-            self.publier_commande("ENAP_OFF")
-            self.bouton_moteur_p.configure(fg_color = "red")
+        else :
+            if self.MP == 1:
+                self.MP = 0
+                self.publier_commande("ENAP_OFF")
+                self.bouton_moteur_p.configure(fg_color = "red")
 
     def change_bouton_prelevement(self, event=0):
         if self.choix_outil.get() == "Prélèvement solide" :
