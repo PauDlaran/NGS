@@ -240,7 +240,7 @@ if __name__=='__main__':
             node.planPince_main = False
 
         node.send_to_arduino()
-        time.sleep(0.1) #Pour ne pas encombrer le buffer de l'arduino, tester pour trouver la valeur la plus adaptée
+        time.sleep(1.5) #Pour ne pas encombrer le buffer de l'arduino, tester pour trouver la valeur la plus adaptée
             
         adisplacement = node.displacement
         time.sleep(0.05)
