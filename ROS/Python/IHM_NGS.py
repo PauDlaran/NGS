@@ -275,37 +275,37 @@ class IHM_NGS(customtkinter.CTk):
                                                     fg_color = ("red"), 
                                                     font=("Roboto Medium", 20),
                                                     command=self.moteur1)
-        self.bouton_moteur_1.grid(row=6, column=0, pady=10, padx=20)
+        self.bouton_moteur_1.grid(row=2, column=2, pady=10, padx=20)
 
         self.bouton_moteur_2 = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur 2",  
                                                     fg_color = ("red"), 
                                                     font=("Roboto Medium", 20),
                                                     command=self.moteur2)
-        self.bouton_moteur_2.grid(row=6, column=1, pady=10, padx=20)
+        self.bouton_moteur_2.grid(row=3, column=2, pady=10, padx=20)
 
         self.bouton_moteur_3 = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur 3",  
                                                     fg_color = ("red"), 
                                                     font=("Roboto Medium", 20),
                                                     command=self.moteur3)
-        self.bouton_moteur_3.grid(row=6, column=0, pady=10, padx=20)
+        self.bouton_moteur_3.grid(row=4, column=2, pady=10, padx=20)
 
         self.bouton_moteur_4 = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur 4",  
                                                     fg_color = ("red"), 
                                                     font=("Roboto Medium", 20),
                                                     command=self.moteur4)
-        self.bouton_moteur_4.grid(row=6, column=1, pady=10, padx=20)
+        self.bouton_moteur_4.grid(row=5, column=2, pady=10, padx=20)
 
         self.bouton_moteur_5 = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur 5",  
                                                     fg_color = ("red"), 
                                                     font=("Roboto Medium", 20),
                                                     command=self.moteur5)
-        self.bouton_moteur_5.grid(row=6, column=0, pady=10, padx=20)
+        self.bouton_moteur_5.grid(row=6, column=2, pady=10, padx=20)
 
         self.bouton_moteur_P = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur P",  
                                                     fg_color = ("red"), 
                                                     font=("Roboto Medium", 20),
                                                     command=self.moteurP)
-        self.bouton_moteur_P.grid(row=6, column=1, pady=10, padx=20)
+        self.bouton_moteur_P.grid(row=7, column=2, pady=10, padx=20)
 
         #Création des bouttons pour scanner les qr codes
         self.qr_code1= customtkinter.CTkButton(master = self.frame_prepa_mission,
