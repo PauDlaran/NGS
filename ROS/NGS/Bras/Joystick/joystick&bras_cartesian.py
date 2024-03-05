@@ -71,15 +71,29 @@ class TeleopNode:
 
         # Initialisation de position bras
         self.joint_parking = [-3.15, 0.0, 0.0, 0.0]
-        self.joint_operationel = [-1.555, 0.6924, -0.9283, -0.2161]
+        
         self.joint_droit = [-1.5691, 0.9206, -2.7592, -0.2618]
         self.joint_pnt_passdroite = [-0.4862, -1.1506, 0.6397, 0.0]
         self.ptn_passhaut = [1.5779, 0.561, -1.4773, -0.8976]
-        self.ptn_passboitehaut_droite = [0.9425, 0.5968, -1.297, -0.6529]
-        self.ptn_passdoigthaut_milieu = [1.5785, 0.7082, -1.2783, -0.546]
-        self.ptn_passdoigthaut_gauche = [2.1828, 0.6217, -1.2564, -0.6878]
-        self.ptn_pass = [0.0, -0.4764, 0.0, 2.0943]
-        self.ptn_sortiepark = [-3.1, 0.0, -0.174, -0.177]
+
+
+
+        #Reel
+        self.ptn_pass = [0.15, 0.4754, -1.3467, 0.135]
+        self.ptn_passboite1 = [1.214, 0.5035, -1.2975, -0.4747]
+        self.ptn_passboite2 = [1.8162, 0.6758, -1.5117, -0.4747]
+        self.ptn_passboite3 = [2.4103, 0.5108, -1.2862, -0.4747]
+
+        self.ptn_frottiHaut_bras = [1.8113, 0.6581, -1.2479, -0.3324]
+        self.ptn_frottiHaut_axe5 = 1.0084
+
+        self.ptn_frottiBas_bras = [1.8113, 0.6581, -0.8969, -0.0856]
+        self.ptn_frottiBas_axe5 = 1.0084
+
+        self.joint_operationel = [-1.555, 0.6924, -0.9283, -0.2161]
+        
+        self.ptn_sortiepark = [-3.1515, -0.0307, -0.3040, -0.20605]
+        self.ptn_sortiepark_axe5 = -0.9709
 
         #Variable pour connaitre l'axe à déplacer
         self.success = False
@@ -101,6 +115,10 @@ class TeleopNode:
         #Initialisation du pas de déplacement
         self.pas = 0.005
         self.pasA= 0.005
+
+        #REC 
+        self.REC_success_plan = 0
+        self.REC_joint_position = [0]
 
     #CODE FONCTIONNEL
     #region
@@ -202,7 +220,7 @@ class TeleopNode:
         ## Déplacement automatique du bras ##
         ######################################
         
-        # Parking vers opérationnel
+        # Parking +Z
         if buttons[4] != 0:
             self.auto_pose = 1
             self.chose_pose_to_plan(self.auto_pose)
@@ -210,36 +228,43 @@ class TeleopNode:
             self.planAuto = True
 
         # Lambda vers opérationnel
-        if buttons[5] != 0:
+        if buttons[9] != 0:
             self.auto_pose = 2
             self.chose_pose_to_plan(self.auto_pose)
             self.displacement = 7
             self.planAuto = True
         
-        # Opérationel, pnt de passage, point de passage doite, pnt de passage haut
-        if buttons[12] != 0:
+        # point de passage droite
+        if buttons[13] != 0:
             self.auto_pose = 3
             self.chose_pose_to_plan(self.auto_pose)
             self.displacement = 7
             self.planAuto = True
 
-        # Pnt de passage haut droite, pnt de passage doite
-        if buttons[13] != 0:
+        # z boite 3
+        if buttons[12] != 0:
             self.auto_pose = 4
             self.chose_pose_to_plan(self.auto_pose)
             self.displacement = 7
             self.planAuto = True
 
-        # Pnt de passage haut, pnt de passage milieu
-        if buttons[14] != 0:
+        # z boite 2
+        if buttons[11] != 0:
             self.auto_pose = 5
             self.chose_pose_to_plan(self.auto_pose)
             self.displacement = 7
             self.planAuto = True
 
-        # Pnt de passage haut, pnt de passage gauche
-        if buttons[15] != 0:
+        # z boite 1
+        if buttons[10] != 0:
             self.auto_pose = 6
+            self.chose_pose_to_plan(self.auto_pose)
+            self.displacement = 7
+            self.planAuto = True
+
+        # z frotti
+        if buttons[14] != 0:
+            self.auto_pose = 7
             self.chose_pose_to_plan(self.auto_pose)
             self.displacement = 7
             self.planAuto = True
@@ -334,7 +359,7 @@ class TeleopNode:
     def move_group_callback(self, data):
         self.REC_success_plan = data.result.error_code.val #Si ==1, alors plannification réussie
         self.REC_joint_position = data.result.planned_trajectory.joint_trajectory.points #Position des joints
-        self.REC_nmbr_frame = len(self.REC_joint_position) #Nombre de frames
+        
 
     
     #Tentative de planification auto, grâce à des points prédéfinies (parking, opérationnel, ...)
@@ -365,14 +390,49 @@ class TeleopNode:
             self.success = self.g.go(joints, wait=True)
             self.g.stop()
             self.g.clear_pose_targets()
+        
+        #Z boite 3
+        if autopose == 4:
+            joints = self.ptn_passboite3
 
-        #
+            self.success = self.g.go(joints, wait=True)
+            self.g.stop()
+            self.g.clear_pose_targets()
+        
+        #Z boite 2
+        if autopose == 5:
+            joints = self.ptn_passboite2
+
+            self.success = self.g.go(joints, wait=True)
+            self.g.stop()
+            self.g.clear_pose_targets()
+        
+        #Z boite 1
+        if autopose == 6:
+            joints = self.ptn_passboite1
+
+            self.success = self.g.go(joints, wait=True)
+            self.g.stop()
+            self.g.clear_pose_targets()
+        
+        #Z frotti
+        if autopose == 7:
+            joints = self.ptn_frottiHaut_bras
+
+            self.success = self.g.go(joints, wait=True)
+            self.g.stop()
+            self.g.clear_pose_targets()
 
         #Envoi les coordonées des joints à l'arduino avec les données enregistrés
-        for i in range(self.REC_nmbr_frame):
-            self.joints_values_pub = self.REC_joint_position[i].positions, self.h.get_current_joint_values()
-            self.pub.publish(str(self.joints_values_pub))
-            time.sleep(0.1)
+        if self.REC_success_plan == 1:
+            for i in range(len(self.REC_joint_position)):
+                self.joints_values_pub = self.REC_joint_position[i].positions, self.h.get_current_joint_values()
+                self.pub.publish(str(self.joints_values_pub))
+                time.sleep(0.1)
+            self.REC_success_plan = 0
+            self.REC_joint_position = [0]
+        else:
+            print("Planification échouée")
         
 
 
@@ -381,24 +441,26 @@ if __name__=='__main__':
     displacement = node.displacement
 
     while True:
-        # print("displacement : ", node.displacement)
+        print("plan_auto : ")
+        print(node.planAuto)
 
         if displacement != node.displacement:
             node.initialisation_joint()
             node.initialisation_pose()
             node.initialisation_r_theta()
-            # print("changement de déplacement")
 
         time.sleep(0.1)
         node.acquisition_joy
         
         #Controle position pré-enregistrée
         if node.planAuto:
+            print("AUTOPOSE")
             node.chose_pose_to_plan(node.auto_pose)
             node.planAuto = False
 
         #Controle Joystick
         else:
+            print("JOY")
             if node.planz:
                 node.execute_plan(node.plan_cartesian_path_z())
                 node.planz = False
