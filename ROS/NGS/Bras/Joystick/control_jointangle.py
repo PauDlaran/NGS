@@ -35,7 +35,7 @@ class TeleopNode:
         #Initialisation de Moveit
         self.g = MoveGroupCommander("pipoudou_arm")
         self.h = MoveGroupCommander("pipoudou_hand")    
-
+        self.displacement = 0
         #Initialisation des joint
         self.joints_values_axe1 = self.g.get_current_joint_values()[0]
         self.joints_values_angle_axe2 = self.g.get_current_joint_values()[1]
@@ -203,12 +203,12 @@ class TeleopNode:
 
 if __name__=='__main__':
     node = TeleopNode()
-    displacement = node.displacement
-
+    adisplacement = 0
+    
     while True:
-
+    
         #Initialisation des joints si changement d'axe de déplacements, permet d'éviter les faux planning
-        if displacement != node.displacement:
+        if adisplacement != node.displacement:
             node.initialisation_joint()
             
         time.sleep(0.1)
@@ -242,7 +242,7 @@ if __name__=='__main__':
         node.send_to_arduino()
         time.sleep(0.1) #Pour ne pas encombrer le buffer de l'arduino, tester pour trouver la valeur la plus adaptée
             
-        displacement = node.displacement
+        adisplacement = node.displacement
         time.sleep(0.05)
         
     rospy.spin()
