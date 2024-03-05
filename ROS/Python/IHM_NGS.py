@@ -2,7 +2,9 @@ import rospy
 from std_msgs.msg import String
 import cv2
 import qrcode
-from PIL import Image, ImageTk
+import PIL
+from PIL import Image
+from PIL import ImageTk
 from pyzbar.pyzbar import decode                 
 import time
 import customtkinter
@@ -217,10 +219,12 @@ class IHM_NGS(customtkinter.CTk):
             #==== frame_prepa_mission ====
 
         self.frame_prepa_mission = customtkinter.CTkFrame(master = self.frame_info)
-        
+        self.frame_prepa_mission2 = customtkinter.CTkFrame(master = self.frame_info)
 
         self.frame_prepa_mission.columnconfigure(0, weight=1)
         self.frame_prepa_mission.rowconfigure((0,1), weight=1)
+        self.frame_prepa_mission2.columnconfigure(0, weight=1)
+        self.frame_prepa_mission2.rowconfigure(0, weight=1)
 
         self.label_title_prepa_mission = customtkinter.CTkLabel(master = self.frame_prepa_mission,
                                                   text="Préparation de mission",
@@ -267,42 +271,6 @@ class IHM_NGS(customtkinter.CTk):
                                                   font=("Roboto Medium", 20))
         self.entry_zone.grid(row=5, column=1, pady=10, padx=20) 
 
-        self.bouton_moteur_1 = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur 1",  
-                                                    fg_color = ("red"), 
-                                                    font=("Roboto Medium", 20),
-                                                    command=self.moteur1)
-        self.bouton_moteur_1.grid(row=6, column=0, pady=10, padx=20)
-
-        self.bouton_moteur_2 = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur 2",  
-                                                    fg_color = ("red"), 
-                                                    font=("Roboto Medium", 20),
-                                                    command=self.moteur2)
-        self.bouton_moteur_2.grid(row=6, column=1, pady=10, padx=20)
-
-        self.bouton_moteur_3 = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur 3",  
-                                                    fg_color = ("red"), 
-                                                    font=("Roboto Medium", 20),
-                                                    command=self.moteur3)
-        self.bouton_moteur_3.grid(row=6, column=0, pady=10, padx=20)
-
-        self.bouton_moteur_4 = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur 4",  
-                                                    fg_color = ("red"), 
-                                                    font=("Roboto Medium", 20),
-                                                    command=self.moteur4)
-        self.bouton_moteur_4.grid(row=6, column=1, pady=10, padx=20)
-
-        self.bouton_moteur_5 = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur 5",  
-                                                    fg_color = ("red"), 
-                                                    font=("Roboto Medium", 20),
-                                                    command=self.moteur5)
-        self.bouton_moteur_5.grid(row=6, column=0, pady=10, padx=20)
-
-        self.bouton_moteur_P = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur P",  
-                                                    fg_color = ("red"), 
-                                                    font=("Roboto Medium", 20),
-                                                    command=self.moteurP)
-        self.bouton_moteur_P.grid(row=6, column=1, pady=10, padx=20)
-
         #Création des bouttons pour scanner les qr codes
         self.qr_code1= customtkinter.CTkButton(master = self.frame_prepa_mission,
                                                         text="QR Code Stockage Pr1", 
@@ -326,7 +294,13 @@ class IHM_NGS(customtkinter.CTk):
                                                         font=("Roboto Medium", 20), 
                                                         command=self.readQrCode3
                                                         )
-        self.qr_code3.grid(row=8, column=1, pady=10, padx=20)                                                 
+        self.qr_code3.grid(row=8, column=1, pady=10, padx=20)          
+
+        self.image = PIL.Image.open("/media/roman/04EB-C7FF1/SYSM@P/photo sysmap ihm redimensionnée.png")
+        self.image_Tk = ImageTk.PhotoImage(self.image)
+        self.image_label = customtkinter.CTkLabel(master = self.frame_prepa_mission2, image=self.image_Tk, text="")
+        self.image_label.image = self.image_Tk
+        self.image_label.grid(row=0, column=0, pady=10, padx=20)                                       
         #==== frame_affichage ====
 
         self.frame_affichage = customtkinter.CTkFrame(master = self.frame_info)
@@ -349,13 +323,12 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_commandes2 = customtkinter.CTkFrame(master = self.frame_affichage,
                                                      corner_radius=0)
         self.frame_commandes2.grid(row=3, column=0, pady=10, padx=20, sticky="nsew")
-
+        
         self.frame_commandes.columnconfigure((0,1,2,3,4,5), weight=1)
         self.frame_commandes.rowconfigure((0,1,2), weight=1)
 
         self.frame_commandes2.columnconfigure((0,1,2,3,4,5), weight=1)
         self.frame_commandes2.rowconfigure((0,1), weight=1)
-
 
         self.label_Remise_zéro = customtkinter.CTkLabel(master = self.frame_affichage,
                                                   text=" Initialisation des axes : ",
@@ -564,7 +537,6 @@ class IHM_NGS(customtkinter.CTk):
 
         self.frame_stockage2 = customtkinter.CTkFrame(master = self.frame_stockage)
         self.frame_stockage2.grid(row=1, column=0, pady=10, padx=20, sticky="nsew")
-        
 
         self.frame_stockage1.columnconfigure(0, weight=1)
         self.frame_stockage1.rowconfigure((0,1), weight=1)
@@ -656,11 +628,11 @@ class IHM_NGS(customtkinter.CTk):
                                                fg_color = ("gray75"), text_color= ("black"),
                                                command=lambda: self.afficher_tracabilite("Stockage3"))
         self.bouton_traçabilite_3.grid(row=2, column=0, pady=10, padx=20)
-    
-    #==== frame_fin_mission ====
-        
+
+        #==== frame_fin ====
+
         self.frame_fin = customtkinter.CTkFrame(master = self.frame_info)
-        self.frame_fin.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
+        #self.frame_fin.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
 
         self.frame_fin.columnconfigure(0, weight=1)
         self.frame_fin.rowconfigure(1, weight=1)
@@ -670,9 +642,10 @@ class IHM_NGS(customtkinter.CTk):
                                                     font=("Roboto Medium", 20))
         self.label_fin.grid(row=0, column=0, pady=10, padx=20)
 
-        self.bouton_puissance = customtkinter.CTkButton(master = self.frame_fin, text="Eteindre le système",    
-                                                        fg_color = ("red"),
-                                                        command=self.Ferme_Puissance)
+        self.bouton_puissance = customtkinter.CTkButton(master = self.frame_fin, text="Eteindre le système", 
+                                               fg_color = ("red"),
+                                               command=self.Ferme_Puissance
+                                            )
         self.bouton_puissance.grid(row=2, column=0, pady=10, padx=20)
         
     def afficher_state(self, event=0):
@@ -683,6 +656,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_accueil.grid_forget()
         self.frame_traçabilite.grid_forget()
         self.frame_prepa_mission.grid_forget()
+        self.frame_prepa_mission2.grid_forget()
         self.frame_stockage.grid_forget()
         self.frame_fin.grid_forget()
         self.frame_affichage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
@@ -696,6 +670,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_accueil.grid_forget()
         self.frame_affichage.grid_forget()
         self.frame_prepa_mission.grid_forget()
+        self.frame_prepa_mission2.grid_forget()
         self.frame_stockage.grid_forget()
         self.frame_fin.grid_forget()
         self.frame_traçabilite.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
@@ -727,6 +702,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_stockage.grid_forget()
         self.frame_fin.grid_forget()
         self.frame_prepa_mission.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
+        self.frame_prepa_mission2.grid(row=1, column=0, pady=10, padx=20, sticky="nsew")
         self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 350)
 
     def afficher_stockage(self, event=0):
@@ -738,6 +714,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_affichage.grid_forget()
         self.frame_traçabilite.grid_forget()
         self.frame_prepa_mission.grid_forget()
+        self.frame_prepa_mission2.grid_forget()
         self.frame_fin.grid_forget()
         self.frame_stockage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
         self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 505)
@@ -751,6 +728,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_affichage.grid_forget()
         self.frame_traçabilite.grid_forget()
         self.frame_prepa_mission.grid_forget()
+        self.frame_prepa_mission2.grid_forget()
         self.frame_stockage.grid_forget()
         self.frame_fin.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
         self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 565)
@@ -942,78 +920,6 @@ class IHM_NGS(customtkinter.CTk):
                 self.etat_stockage_3.configure(text="FULL")
                 self.etat_stockage_3.configure(text_color="red")
                 self.publier_commande("FB 3")
-    M1=0
-    M2=0
-    M3=0
-    M4=0
-    M5=0
-    MP=0
-
-    def moteur1(self, event=0):
-        if self.M1 == 0:
-            self.M1 = 1
-            self.publier_commande("ENA1")
-            self.bouton_moteur_1.configure(fg_color = "green")
-        if self.M1 == 1:
-            self.M1 = 0
-            self.publier_commande("ENA1_OFF")
-            self.bouton_moteur_1.configure(fg_color = "red")
-        #recep arduino
-    
-    def moteur2(self, event=0):
-        if self.M2 == 0:
-            self.M2 = 1
-            self.publier_commande("ENA2")
-            self.bouton_moteur_2.configure(fg_color = "green")
-        if self.M2 == 1:
-            self.M2 = 0
-            self.publier_commande("ENA2_OFF")
-            self.bouton_moteur_2.configure(fg_color = "red")
-        #recep arduino
-    
-    def moteur3(self, event=0): 
-        if self.M3 == 0:
-            self.M3 = 1
-            self.publier_commande("ENA3")
-            self.bouton_moteur_3.configure(fg_color = "green")
-        if self.M3 == 1:
-            self.M3 = 0
-            self.publier_commande("ENA3_OFF")
-            self.bouton_moteur_3.configure(fg_color = "red")
-        #recep arduino
-    
-    def moteur4(self, event=0):
-        if self.M4 == 0:
-            self.M4 = 1
-            self.publier_commande("ENA4")
-            self.bouton_moteur_4.configure(fg_color = "green")
-        if self.M4 == 1:
-            self.M4 = 0
-            self.publier_commande("ENA4_OFF")
-            self.bouton_moteur_4.configure(fg_color = "red")
-        #recep arduino
-    
-    def moteur5(self, event=0):
-        if self.M5 == 0:
-            self.M5 = 1
-            self.publier_commande("ENA5")
-            self.bouton_moteur_5.configure(fg_color = "green")
-        if self.M5 == 1:
-            self.M5 = 0
-            self.publier_commande("ENA5_OFF")
-            self.bouton_moteur_5.configure(fg_color = "red")
-        #recep arduino
-    
-    def moteurp(self, event=0):
-        if self.MP == 0:
-            self.MP = 1
-            self.publier_commande("ENAP")
-            self.bouton_moteur_p.configure(fg_color = "green")
-        if self.MP == 1:
-            self.MP = 0
-            self.publier_commande("ENAP_OFF")
-            self.bouton_moteur_p.configure(fg_color = "red")
-        #recep arduino
 
     def change_bouton_prelevement(self, event=0):
         if self.choix_outil.get() == "Prélèvement solide" :
@@ -1043,10 +949,11 @@ class IHM_NGS(customtkinter.CTk):
             self.bouton_ouverture_1.grid()
             self.bouton_ouverture_2.grid()
             self.bouton_ouverture_3.grid()
-    
+
     def Ferme_Puissance(self, event=0) :
         self.publier_commande("SHUTDOWN")
-    
+        
+
     def change_numero_prelevement(self, event=0):
         if self.n_prelev.get() == "1" :
             self.entry_numéro_prelevement.configure(text= "1")
@@ -1250,51 +1157,27 @@ class IHM_NGS(customtkinter.CTk):
     def callback(self, data) :
         time.sleep(0.01)
         if data.data.startswith("temp_int"):
-            self.value_temp_int.configure(text=data.data.split("=")[-1] + "°C")
+            self.value_temp_int.configure(text=data.data.split("=")[-1])
         if data.data.startswith("temp_ext"):
-            self.value_temp_ext.configure(text=data.data.split("=")[-1] + "°C")
+            self.value_temp_ext.configure(text=data.data.split("=")[-1])
         if data.data.startswith("inertie_X"):
-            self.value_inertie_X.configure(text=str(int(data.data.split("=")[-1])-1))
+            self.value_inertie_X.configure(text=data.data.split("=")[-1])
         if data.data.startswith("inertie_Y"):
-            self.value_inertie_Y.configure(text=str(int(data.data.split("=")[-1])-1))
+            self.value_inertie_Y.configure(text=data.data.split("=")[-1])
         if data.data.startswith("inertie_Z"):
-            self.value_inertie_Z.configure(text=str(int(data.data.split("=")[-1])-1))
+            self.value_inertie_Z.configure(text=data.data.split("=")[-1])
         if data.data.startswith("init_bras_1"):
-            value = data.data.split("=")[-1]
-            if value == "0" :
-                self.value_init_bras_1.configure(text="Non")
-            if value == "1" :
-                self.value_init_bras_1.configure(text="Oui")
+            self.value_init_bras_1.configure(text=data.data.split("=")[-1])
         if data.data.startswith("init_bras_2"):
-            value = data.data.split("=")[-1]
-            if value == "0" :
-                self.value_init_bras_2.configure(text="Non")
-            if value == "1" :
-                self.value_init_bras_2.configure(text="Oui")
+            self.value_init_bras_2.configure(text=data.data.split("=")[-1])
         if data.data.startswith("init_bras_3"):
-            value = data.data.split("=")[-1]
-            if value == "0" :
-                self.value_init_bras_3.configure(text="Non")
-            if value == "1" :
-                self.value_init_bras_3.configure(text="Oui")
+            self.value_init_bras_3.configure(text=data.data.split("=")[-1])
         if data.data.startswith("init_bras_4"):
-            value = data.data.split("=")[-1]
-            if value == "0" :
-                self.value_init_bras_4.configure(text="Non")
-            if value == "1" :
-                self.value_init_bras_4.configure(text="Oui")
+            self.value_init_bras_4.configure(text=data.data.split("=")[-1])
         if data.data.startswith("init_bras_5"):
-            value = data.data.split("=")[-1]
-            if value == "0" :
-                self.value_init_bras_5.configure(text="Non")
-            if value == "1" :
-                self.value_init_bras_5.configure(text="Oui")
+            self.value_init_bras_5.configure(text=data.data.split("=")[-1])
         if data.data.startswith("init_bras_P"):
-            value = data.data.split("=")[-1]
-            if value == "0" :
-                self.value_init_bras_P.configure(text="Non")
-            if value == "1" :
-                self.value_init_bras_P.configure(text="Oui")
+            self.value_init_bras_P.configure(text=data.data.split("=")[-1])
 
     def callback_image(self, data) :
         try:
