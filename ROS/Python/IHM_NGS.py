@@ -267,6 +267,42 @@ class IHM_NGS(customtkinter.CTk):
                                                   font=("Roboto Medium", 20))
         self.entry_zone.grid(row=5, column=1, pady=10, padx=20) 
 
+        self.bouton_moteur_1 = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur 1",  
+                                                    fg_color = ("red"), 
+                                                    font=("Roboto Medium", 20),
+                                                    command=self.moteur1)
+        self.bouton_moteur_1.grid(row=6, column=0, pady=10, padx=20)
+
+        self.bouton_moteur_2 = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur 2",  
+                                                    fg_color = ("red"), 
+                                                    font=("Roboto Medium", 20),
+                                                    command=self.moteur2)
+        self.bouton_moteur_2.grid(row=6, column=1, pady=10, padx=20)
+
+        self.bouton_moteur_3 = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur 3",  
+                                                    fg_color = ("red"), 
+                                                    font=("Roboto Medium", 20),
+                                                    command=self.moteur3)
+        self.bouton_moteur_3.grid(row=6, column=0, pady=10, padx=20)
+
+        self.bouton_moteur_4 = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur 4",  
+                                                    fg_color = ("red"), 
+                                                    font=("Roboto Medium", 20),
+                                                    command=self.moteur4)
+        self.bouton_moteur_4.grid(row=6, column=1, pady=10, padx=20)
+
+        self.bouton_moteur_5 = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur 5",  
+                                                    fg_color = ("red"), 
+                                                    font=("Roboto Medium", 20),
+                                                    command=self.moteur5)
+        self.bouton_moteur_5.grid(row=6, column=0, pady=10, padx=20)
+
+        self.bouton_moteur_P = customtkinter.CTkButton(master = self.frame_prepa_mission, text="Moteur P",  
+                                                    fg_color = ("red"), 
+                                                    font=("Roboto Medium", 20),
+                                                    command=self.moteurP)
+        self.bouton_moteur_P.grid(row=6, column=1, pady=10, padx=20)
+
         #Création des bouttons pour scanner les qr codes
         self.qr_code1= customtkinter.CTkButton(master = self.frame_prepa_mission,
                                                         text="QR Code Stockage Pr1", 
@@ -906,6 +942,78 @@ class IHM_NGS(customtkinter.CTk):
                 self.etat_stockage_3.configure(text="FULL")
                 self.etat_stockage_3.configure(text_color="red")
                 self.publier_commande("FB 3")
+    M1=0
+    M2=0
+    M3=0
+    M4=0
+    M5=0
+    MP=0
+
+    def moteur1(self, event=0):
+        if self.M1 == 0:
+            self.M1 = 1
+            self.publier_commande("ENA1")
+            self.bouton_moteur_1.configure(fg_color = "green")
+        if self.M1 == 1:
+            self.M1 = 0
+            self.publier_commande("ENA1_OFF")
+            self.bouton_moteur_1.configure(fg_color = "red")
+        #recep arduino
+    
+    def moteur2(self, event=0):
+        if self.M2 == 0:
+            self.M2 = 1
+            self.publier_commande("ENA2")
+            self.bouton_moteur_2.configure(fg_color = "green")
+        if self.M2 == 1:
+            self.M2 = 0
+            self.publier_commande("ENA2_OFF")
+            self.bouton_moteur_2.configure(fg_color = "red")
+        #recep arduino
+    
+    def moteur3(self, event=0): 
+        if self.M3 == 0:
+            self.M3 = 1
+            self.publier_commande("ENA3")
+            self.bouton_moteur_3.configure(fg_color = "green")
+        if self.M3 == 1:
+            self.M3 = 0
+            self.publier_commande("ENA3_OFF")
+            self.bouton_moteur_3.configure(fg_color = "red")
+        #recep arduino
+    
+    def moteur4(self, event=0):
+        if self.M4 == 0:
+            self.M4 = 1
+            self.publier_commande("ENA4")
+            self.bouton_moteur_4.configure(fg_color = "green")
+        if self.M4 == 1:
+            self.M4 = 0
+            self.publier_commande("ENA4_OFF")
+            self.bouton_moteur_4.configure(fg_color = "red")
+        #recep arduino
+    
+    def moteur5(self, event=0):
+        if self.M5 == 0:
+            self.M5 = 1
+            self.publier_commande("ENA5")
+            self.bouton_moteur_5.configure(fg_color = "green")
+        if self.M5 == 1:
+            self.M5 = 0
+            self.publier_commande("ENA5_OFF")
+            self.bouton_moteur_5.configure(fg_color = "red")
+        #recep arduino
+    
+    def moteurp(self, event=0):
+        if self.MP == 0:
+            self.MP = 1
+            self.publier_commande("ENAP")
+            self.bouton_moteur_p.configure(fg_color = "green")
+        if self.MP == 1:
+            self.MP = 0
+            self.publier_commande("ENAP_OFF")
+            self.bouton_moteur_p.configure(fg_color = "red")
+        #recep arduino
 
     def change_bouton_prelevement(self, event=0):
         if self.choix_outil.get() == "Prélèvement solide" :
