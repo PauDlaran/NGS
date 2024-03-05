@@ -37,11 +37,11 @@ class TeleopNode:
         #Initialisation du subscriber
         self.joy_sub = rospy.Subscriber('/joy', Joy, self.acquisition_joy) #Queue size = 1 ??
         self.joint_sate_sub = rospy.Subscriber('/move_group/fake_controller_joint_states', JointState, self.chose_pose_to_plan)
-        self.move_group_result_sub = rospy.Subscriber('/move_group/result', MoveGroupActionResult, self.move_group_callback)    
+        self.move_group_result_sub = rospy.Subscriber('/move_group/result', MoveGroupActionResult, self.move_group_callback)
 
         #Initialisation du publisher
         self.pub = rospy.Publisher('/com_arduino', String, queue_size=10)
-        rospy.Rate(5)
+        # rospy.Rate(1)
 
         #####Initialisation de Moveit
         #Group
@@ -69,16 +69,7 @@ class TeleopNode:
         self.joint_pince_fermee = [0, 0.4488, 0, -0.4764]
         self.joint_pince_ouverte = [1.0472, 0.4488, 1.0472, 0.5672]
 
-        # Initialisation de position bras
-        self.joint_parking = [-3.15, 0.0, 0.0, 0.0]
-        
-        self.joint_droit = [-1.5691, 0.9206, -2.7592, -0.2618]
-        self.joint_pnt_passdroite = [-0.4862, -1.1506, 0.6397, 0.0]
-        self.ptn_passhaut = [1.5779, 0.561, -1.4773, -0.8976]
-
-
-
-        #Reel
+        #Position Reel, prise sur le bras 
         self.ptn_pass = [0.15, 0.4754, -1.3467, 0.135]
         self.ptn_passboite1 = [1.214, 0.5035, -1.2975, -0.4747]
         self.ptn_passboite2 = [1.8162, 0.6758, -1.5117, -0.4747]
@@ -94,6 +85,8 @@ class TeleopNode:
         
         self.ptn_sortiepark = [-3.1515, -0.0307, -0.3040, -0.20605]
         self.ptn_sortiepark_axe5 = -0.9709
+
+        self.joint_parking = [-3.15, 0.0, 0.0, 0.0]
 
         #Variable pour connaitre l'axe à déplacer
         self.success = False
@@ -346,7 +339,7 @@ class TeleopNode:
     #Donne à l'arduino les données de position des axes en brut de moveit (radian), la conversion se fait dans la RPi
     def send_to_arduino(self):
         self.joints_values_pub = self.g.get_current_joint_values(), self.h.get_current_joint_values()
-
+        print("Tram_arduino_classic")
         self.pub.publish(str(self.joints_values_pub))
 
     #Exécution du plan selon la position du TCP (carthésien)
@@ -359,8 +352,6 @@ class TeleopNode:
     def move_group_callback(self, data):
         self.REC_success_plan = data.result.error_code.val #Si ==1, alors plannification réussie
         self.REC_joint_position = data.result.planned_trajectory.joint_trajectory.points #Position des joints
-        
-
     
     #Tentative de planification auto, grâce à des points prédéfinies (parking, opérationnel, ...)
     def chose_pose_to_plan(self, autopose):
@@ -415,7 +406,7 @@ class TeleopNode:
             self.g.stop()
             self.g.clear_pose_targets()
         
-        #Z frotti
+        #Z frotti (boite 2)
         if autopose == 7:
             joints = self.ptn_frottiHaut_bras
 
@@ -423,15 +414,18 @@ class TeleopNode:
             self.g.stop()
             self.g.clear_pose_targets()
 
-        #Envoi les coordonées des joints à l'arduino avec les données enregistrés
-        if self.REC_success_plan == 1:
-            for i in range(len(self.REC_joint_position)):
-                self.joints_values_pub = self.REC_joint_position[i].positions, self.h.get_current_joint_values()
-                self.pub.publish(str(self.joints_values_pub))
-                time.sleep(2)
-                print("tram send")
+        #Envoi les coordonées des joints à l'arduino avec les données enregistrés si réussite du déplacement
+        if self.REC_success_plan == 1 and self.planAuto:
+            
+            for i in range(len(self.REC_joint_position)-1):
+                print("tram REC :")
+                print(self.REC_joint_position[i].positions)
+                print(i)
+                # self.joints_values_pub = self.REC_joint_position[i].positions, self.h.get_current_joint_values()
+                # self.pub.publish(str(self.joints_values_pub))
+                rospy.Rate().sleep(2)
             self.REC_success_plan = 0
-            self.REC_joint_position = [0]
+            self.REC_joint_position = []
         else:
             print("Planification échouée")
         
@@ -442,8 +436,6 @@ if __name__=='__main__':
     displacement = node.displacement
 
     while True:
-        print("plan_auto : ")
-        print(node.planAuto)
 
         if displacement != node.displacement:
             node.initialisation_joint()
@@ -455,38 +447,42 @@ if __name__=='__main__':
         
         #Controle position pré-enregistrée
         if node.planAuto:
-            print("AUTOPOSE")
             node.chose_pose_to_plan(node.auto_pose)
             node.planAuto = False
 
         #Controle Joystick
         else:
-            print("JOY")
             if node.planz:
                 node.execute_plan(node.plan_cartesian_path_z())
+                node.send_to_arduino()
                 node.planz = False
                 
             if node.planr:
                 node.execute_plan(node.plan_cartesian_path_r())
+                node.send_to_arduino()
                 node.planr = False
                 
             if node.axe1:
                 node.set_JointVal_axe1()
+                node.send_to_arduino()
                 node.axe1 = False
             
             if node.plan_axe4:
                 node.set_JointVal_axe4()
+                node.send_to_arduino()
                 node.plan_axe4 = False
             
             if node.planPince_doigts:
                 node.set_pose_goal_pince_doigts()
+                node.send_to_arduino()
                 node.planPince_doigts = False
             
             if node.planPince_main:
                 node.set_pose_goal_pince_main()
+                node.send_to_arduino()
                 node.planPince_main = False
-
-            node.send_to_arduino()
+            print("a")
+            
             time.sleep(1)
 
         displacement = node.displacement
