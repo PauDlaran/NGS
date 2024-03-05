@@ -1152,17 +1152,41 @@ class IHM_NGS(customtkinter.CTk):
         if data.data.startswith("inertie_Z"):
             self.value_inertie_Z.configure(text=data.data.split("=")[-1])
         if data.data.startswith("init_bras_1"):
-            self.value_init_bras_1.configure(text=data.data.split("=")[-1])
+            value = data.data.split("=")[-1]
+            if value == "0" :
+                self.value_init_bras_1.configure(text="Non")
+            if value == "1" :
+                self.value_init_bras_1.configure(text="Oui")
         if data.data.startswith("init_bras_2"):
-            self.value_init_bras_2.configure(text=data.data.split("=")[-1])
+            value = data.data.split("=")[-1]
+            if value == "0" :
+                self.value_init_bras_2.configure(text="Non")
+            if value == "1" :
+                self.value_init_bras_2.configure(text="Oui")
         if data.data.startswith("init_bras_3"):
-            self.value_init_bras_3.configure(text=data.data.split("=")[-1])
+            value = data.data.split("=")[-1]
+            if value == "0" :
+                self.value_init_bras_3.configure(text="Non")
+            if value == "1" :
+                self.value_init_bras_3.configure(text="Oui")
         if data.data.startswith("init_bras_4"):
-            self.value_init_bras_4.configure(text=data.data.split("=")[-1])
+            value = data.data.split("=")[-1]
+            if value == "0" :
+                self.value_init_bras_4.configure(text="Non")
+            if value == "1" :
+                self.value_init_bras_4.configure(text="Oui")
         if data.data.startswith("init_bras_5"):
-            self.value_init_bras_5.configure(text=data.data.split("=")[-1])
+            value = data.data.split("=")[-1]
+            if value == "0" :
+                self.value_init_bras_5.configure(text="Non")
+            if value == "1" :
+                self.value_init_bras_5.configure(text="Oui")
         if data.data.startswith("init_bras_P"):
-            self.value_init_bras_P.configure(text=data.data.split("=")[-1])
+            value = data.data.split("=")[-1]
+            if value == "0" :
+                self.value_init_bras_P.configure(text="Non")
+            if value == "1" :
+                self.value_init_bras_P.configure(text="Oui")
 
     def callback_image(self, data) :
         try:
