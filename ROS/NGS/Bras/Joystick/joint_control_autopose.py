@@ -84,8 +84,12 @@ class TeleopNode:
         self.planPince_doigts = False
         self.planPince_main = False
 
+        self.test = False
+
         self.planAuto = False
         self.displacement = 0
+
+        
 
         #Initialisation du pas de déplacement
         self.pas = 0.005
@@ -96,6 +100,7 @@ class TeleopNode:
         self.REC_success_plan = 0
         self.positions = [0]
         self.REC_hand_joint_position = [0]
+        self.run_REC_plan = False
 
     def initialisation_joint(self):
         #Initialisation Bras
@@ -109,6 +114,7 @@ class TeleopNode:
         self.joint_values_pince_doigt1 = self.h.get_current_joint_values()[1]
         self.joint_values_pince_doigt2 = self.h.get_current_joint_values()[2]
         self.joint_values_pince_doigt3 = self.h.get_current_joint_values()[3]
+
    
     #Acquisition et traitement des données du joystick
     def acquisition_joy(self, joy_msg):
@@ -182,8 +188,15 @@ class TeleopNode:
             self.planPince_doigts = True
             self.displacement = 5
             print("pince fermée")
+
+        
         #endregion
         
+        #TEST
+        if buttons[7] != 0:
+            self.test = True
+            self.displacement = 8
+
         ######################################
         ## Déplacement automatique du bras ##
         ######################################
@@ -295,11 +308,19 @@ class TeleopNode:
         self.h.stop()
         self.h.clear_pose_targets()
 
+    def set_testVal(self):
+        joints = self.g.get_current_joint_values()
+        joints = self.joint_operationel
+        self.success = self.g.go(joints, wait=False)
+        # time.sleep(0.2)
+        self.g.stop()
+        self.g.clear_pose_targets()
+
     #Donne à l'arduino les données de position des axes en brut de moveit, la conversion se fait dans la RPi
     def send_to_arduino(self):
-        self.joints_values_pub = self.g.get_current_joint_values(), self.h.get_current_joint_values()
-
-        self.pub.publish(str(self.joints_values_pub))
+        if not self.run_REC_plan:
+            joints_values_pub = self.g.get_current_joint_values(), self.h.get_current_joint_values()
+            self.pub.publish(str(joints_values_pub))
 
     def move_group_callback(self, data):
         self.REC_success_plan = data.result.error_code.val #Si ==1, alors plannification réussie
@@ -394,10 +415,11 @@ if __name__=='__main__':
     adisplacement = 0
     
     while True:
-    
+        
         #Initialisation des joints si changement d'axe de déplacements, permet d'éviter les faux planning
         if adisplacement != node.displacement:
             node.initialisation_joint()
+
             #TODO
             
         time.sleep(0.1)
@@ -405,59 +427,65 @@ if __name__=='__main__':
 
         if node.planAuto:
             print("Auto")
+            node.run_REC_plan = True
             #Run position pince
-            # local_REC_hand_joint_position = node.REC_hand_joint_position
-            # success = node.h.go(local_REC_hand_joint_position, wait=True)
-            # node.h.stop()
-            # node.h.clear_pose_targets()
+            local_REC_hand_joint_position = node.REC_hand_joint_position
+            success = node.h.go(local_REC_hand_joint_position, wait=True)
+            node.h.stop()
+            node.h.clear_pose_targets()
 
             #Envoi les coordonées des joints à l'arduino avec les données enregistrés si réussite du déplacement
             local_REC_joint_position = node.REC_joint_position
             nmbr_frame = len(local_REC_joint_position)
-            if nmbr_frame % 2 == 0:
-                nmbr = nmbr_frame/4
-            else:
-                nmbr = nmbr_frame/4 + 0.25
-            # print(nmbr)
-            # print(nmbr_frame)
+            if nmbr_frame % 2 != 0:
+                local_REC_joint_position.append(local_REC_joint_position[-1])
+                nmbr_frame +=1
             
-            for i in range(0, int(nmbr), 2):
-                pub = local_REC_joint_position[i].positions, node.h.get_current_joint_values()
+            
+            
+            for i in range(0, int(nmbr_frame), 2):
+                pub = local_REC_joint_position[i].positions, local_REC_hand_joint_position
                 node.pub.publish(str(pub))
 
                 time.sleep(2)
+
             
             node.REC_success_plan = 0
             node.REC_joint_position = []
             node.planAuto = False
+            node.run_REC_plan = False
 
-            time.sleep(0.1)
-            node.initialisation_joint()
-
-
-        
+            # time.sleep(0.1)
+            # node.initialisation_joint()
+ 
         if node.axe1:
             node.set_JointVal_axe1()
+            
             node.axe1 = False
 
         if node.axe2:
             node.set_JointVal_axe2()
+            
             node.axe2 = False
 
         if node.axe3:
             node.set_JointVal_axe3()
+            
             node.axe3 = False
         
         if node.axe4:
             node.set_JointVal_axe4()
+           
             node.axe4 = False
         
         if node.planPince_doigts:
             node.set_pose_goal_pince_doigts()
+            
             node.planPince_doigts = False
         
         if node.planPince_main:
             node.set_pose_goal_pince_main()
+            
             node.planPince_main = False
 
         node.send_to_arduino()
