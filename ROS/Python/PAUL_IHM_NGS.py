@@ -704,7 +704,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_stockage.grid_forget()
         self.frame_fin.grid_forget()
         self.frame_affichage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
-        self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 480)
+        self.image_NGS_label.grid(row=3, column=0, pady=10, padx=20, columnspan=2, sticky='s')
 
     def afficher_tracabilite(self, button, event=0):
         self.bouton_mission.configure(fg_color = "gray75")
@@ -747,7 +747,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_fin.grid_forget()
         self.frame_prepa_mission.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
         self.frame_prepa_mission2.grid(row=1, column=0, pady=10, padx=20, sticky="nsew")
-        self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 350)
+        self.image_NGS_label.grid(row=3, column=0, pady=10, padx=20, columnspan=2, sticky='s')
 
     def afficher_stockage(self, event=0):
         self.bouton_mission.configure(fg_color = "gray75")
@@ -761,7 +761,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_prepa_mission2.grid_forget()
         self.frame_fin.grid_forget()
         self.frame_stockage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
-        self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 465)
+        self.image_NGS_label.grid(row=3, column=0, pady=10, padx=20, columnspan=2, sticky='s')
         
     def afficher_fin_mission(self, event=0):
         self.bouton_mission.configure(fg_color = "gray75")
@@ -775,7 +775,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_prepa_mission2.grid_forget()
         self.frame_stockage.grid_forget()
         self.frame_fin.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
-        self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 565)
+        self.image_NGS_label.grid(row=3, column=0, pady=10, padx=20, columnspan=2, sticky='s')
 
     def generateQrCode(self, data, event=0):
 
