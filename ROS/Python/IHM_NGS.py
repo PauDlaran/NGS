@@ -222,18 +222,18 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_prepa_mission2 = customtkinter.CTkFrame(master = self.frame_info)
 
         self.frame_prepa_mission.columnconfigure(0, weight=1)
-        self.frame_prepa_mission.rowconfigure((0,1), weight=1)
+        self.frame_prepa_mission.rowconfigure((0,8), weight=1)
         self.frame_prepa_mission2.columnconfigure(0, weight=1)
         self.frame_prepa_mission2.rowconfigure(0, weight=1)
 
         self.label_title_prepa_mission = customtkinter.CTkLabel(master = self.frame_prepa_mission,
                                                   text="Préparation de mission",
                                                   font=("Roboto Medium", 20))
-        self.label_title_prepa_mission.grid(row=0, column=0, pady=10, padx=20)
+        self.label_title_prepa_mission.grid(row=0, column=0, pady=10, padx=20, columnspan=3)
 
         self.choix_outil = customtkinter.CTkOptionMenu(self.frame_prepa_mission, fg_color= "black", button_color= "black", values=["Choix du type de prélèvement", "Prélèvement solide", "Prélèvement liquide", "Prélèvement poussière", "Frottis"],
                                             command = self.change_bouton_prelevement)
-        self.choix_outil.grid(row=1, column=0, pady=10, padx=20, sticky="nsew")
+        self.choix_outil.grid(row=1, column=0, pady=10, padx=20, sticky="ns")
 
         self.label_numero_mission_prepa = customtkinter.CTkLabel(master = self.frame_prepa_mission,
                                                   text="Numéro de mission :",
@@ -332,11 +332,11 @@ class IHM_NGS(customtkinter.CTk):
                                                         )
         self.qr_code3.grid(row=8, column=1, pady=10, padx=20)          
 
-        self.image = PIL.Image.open("./photo_ihm/1.png")
+        self.image = PIL.Image.open("/home/ngs/Documents/NGS/ROS/Python/photo_ihm/1.png")
         self.image_Tk = ImageTk.PhotoImage(self.image)
         self.image_label = customtkinter.CTkLabel(master = self.frame_prepa_mission2, image=self.image_Tk, text="")
         self.image_label.image = self.image_Tk
-        self.image_label.grid(row=0, column=0, pady=10, padx=20)                                       
+        self.image_label.grid(row=0, column=0, pady=10, padx=20, columnspan=2)                                       
         #==== frame_affichage ====
 
         self.frame_affichage = customtkinter.CTkFrame(master = self.frame_info)
@@ -696,7 +696,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_stockage.grid_forget()
         self.frame_fin.grid_forget()
         self.frame_affichage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
-        self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 300,ipady = 400)
+        self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 480)
 
     def afficher_tracabilite(self, button, event=0):
         self.bouton_mission.configure(fg_color = "gray75")
@@ -753,7 +753,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_prepa_mission2.grid_forget()
         self.frame_fin.grid_forget()
         self.frame_stockage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
-        self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 505)
+        self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 465)
         
     def afficher_fin_mission(self, event=0):
         self.bouton_mission.configure(fg_color = "gray75")
