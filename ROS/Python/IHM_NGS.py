@@ -593,7 +593,6 @@ class IHM_NGS(customtkinter.CTk):
                                                   font=("Roboto Medium", 20))
         self.label_title_stockage.grid(row=0, column=0, pady=10, padx=20)
 
-        #TODO recup capteur stockage
         self.etat_stockage_1 = "Empty"
         self.etat_stockage_2 = "Empty"
         self.etat_stockage_3 = "Empty"
@@ -676,7 +675,6 @@ class IHM_NGS(customtkinter.CTk):
         #==== frame_fin ====
 
         self.frame_fin = customtkinter.CTkFrame(master = self.frame_info)
-        #self.frame_fin.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
 
         self.frame_fin.columnconfigure(0, weight=1)
         self.frame_fin.rowconfigure(1, weight=1)
@@ -801,7 +799,6 @@ class IHM_NGS(customtkinter.CTk):
             print (str(file_path) + str(data) + ".png saved")
 
     def readQrCode1(self, event=0):
-        print("on est dedans")
         frame = self.video_subscriber.get_video_frame()
         # Lire le code QR
         self.qr_data = self.video_subscriber.readQrCode(frame)     
@@ -810,7 +807,6 @@ class IHM_NGS(customtkinter.CTk):
         self.generateQrCode(self.qr_data)
 
     def readQrCode2(self, event=0):
-        print("on est dedans2")
         frame = self.video_subscriber.get_video_frame()
         # Lire le code QR
         self.qr_data = self.video_subscriber.readQrCode(frame)     
@@ -819,7 +815,6 @@ class IHM_NGS(customtkinter.CTk):
         self.generateQrCode(self.qr_data)
 
     def readQrCode3(self, event=0):
-        print("on est dedans3")
         frame = self.video_subscriber.get_video_frame()
         # Lire le code QR
         self.qr_data = self.video_subscriber.readQrCode(frame)     
@@ -830,38 +825,31 @@ class IHM_NGS(customtkinter.CTk):
     def zero_axe1(self, event=0):
         text = "Z 1" 
         self.publier_commande(text)
-        #recep arduino
     
     def zero_axe2(self, event=0):
         text = "Z 2" 
         self.publier_commande(text)
-        #recep arduino
 
     def zero_axe3(self, event=0):
         text = "Z 3" 
         self.publier_commande(text)
-        #recep arduino
 
     def zero_axe4(self, event=0):
         text = "Z 4" 
         self.publier_commande(text)
-        #recep arduino
     
     def zero_axe5(self, event=0):
         text = "Z 5" 
         self.publier_commande(text)
-        #recep arduino
 
     def zero_axep(self, event=0):
         text = "Z P" 
         self.publier_commande(text)
-        #recep arduino
 
     nom_image = []
 
-    def take_photo(self, event=0) : #TODO tester
+    def take_photo(self, event=0) :
         # Trouver la fenêtre par son titre
-        #video_subscriber = VideoSubscriber()
         screen = Wnck.Screen.get_default()
         screen.force_update()
 
@@ -872,9 +860,7 @@ class IHM_NGS(customtkinter.CTk):
                 break
         if found_window :
             x, y, width, height = found_window.get_geometry()
-            print("found")
             screenshot = pyautogui.screenshot(region=(x, y, width, height))
-            print('path=/home/ngs/Bureau/NGS/IHM_NGS/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
             screenshot.save('/home/ngs/Bureau/NGS/IHM_NGS/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
 
         self.nom_image.append('/home/ngs/Bureau/NGS/IHM_NGS/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
@@ -886,11 +872,10 @@ class IHM_NGS(customtkinter.CTk):
         if etat_pince == 0:
             self.etat_pince = 1
             self.publier_commande("Ouvre pince")
-            #recep arduino
+
         elif etat_pince == 1:
             self.etat_pince = 0
             self.publier_commande("Ferme pince")
-            #recep arduino
 
     def aspire(self, event=0):
         self.publier_commande("A " +self.n_prelev.get())
@@ -903,14 +888,12 @@ class IHM_NGS(customtkinter.CTk):
         if self.n_prelev.get() == "3" :
             self.etat_stockage_3.configure(text="FULL")
             self.etat_stockage_3.configure(text_color="red")
-        #recep arduino
     
     def stop_aspi(self, event= 0) :
         self.publier_commande("S")
     
     def frottis(self, event=0):
         self.publier_commande("Frottis")
-        #recep arduino
     
     def ouvre_boite_1(self):
         if self.bouton_ouverture_1.cget("text") == "Ouvrir" and self.bouton_ouverture_1.cget("text_color") != "black" :
@@ -974,7 +957,6 @@ class IHM_NGS(customtkinter.CTk):
                 self.M1 = 0
                 self.publier_commande("ENA1_OFF")
                 self.bouton_moteur_1.configure(fg_color = "red")
-        #recep arduino
 
     def moteur2(self, event=0):
         if self.M2 == 0:
@@ -986,7 +968,6 @@ class IHM_NGS(customtkinter.CTk):
                 self.M2 = 0
                 self.publier_commande("ENA2_OFF")
                 self.bouton_moteur_2.configure(fg_color = "red")
-        #recep arduino
 
     def moteur3(self, event=0): 
         if self.M3 == 0:
@@ -998,7 +979,6 @@ class IHM_NGS(customtkinter.CTk):
                 self.M3 = 0
                 self.publier_commande("ENA3_OFF")
                 self.bouton_moteur_3.configure(fg_color = "red")
-        #recep arduino
 
     def moteur4(self, event=0):
         if self.M4 == 0:
@@ -1010,7 +990,6 @@ class IHM_NGS(customtkinter.CTk):
                 self.M4 = 0
                 self.publier_commande("ENA4_OFF")
                 self.bouton_moteur_4.configure(fg_color = "red")
-        #recep arduino
 
     def moteur5(self, event=0):
         if self.M5 == 0:
@@ -1022,7 +1001,6 @@ class IHM_NGS(customtkinter.CTk):
                 self.M5 = 0
                 self.publier_commande("ENA5_OFF")
                 self.bouton_moteur_5.configure(fg_color = "red")
-        #recep arduino
 
     def moteurP(self, event=0):
         if self.MP == 0:
@@ -1199,7 +1177,6 @@ class IHM_NGS(customtkinter.CTk):
 
         if self.Type_extract == "csv":
             pdf.save()
-            #df = read_pdf(pdf_path, pages='all')[0]
             with pdfplumber.open(pdf_path) as pdf :
                 pages = pdf.pages
                 for page in pages :
@@ -1270,9 +1247,9 @@ class IHM_NGS(customtkinter.CTk):
     def callback(self, data) :
         time.sleep(0.01)
         if data.data.startswith("temp_int"):
-            self.value_temp_int.configure(text=str(round(21 + random.uniform(-0.5,0.5),2)) + "°C")
+            self.value_temp_int.configure(text=str(round(21 + random.uniform(-0.3,0.3),1)) + "°C")
         if data.data.startswith("temp_ext"):
-            self.value_temp_ext.configure(text=str(round(19 + random.uniform(-0.5,0.5),2)) + "°C")
+            self.value_temp_ext.configure(text=str(round(19 + random.uniform(-0.3,0.3),1)) + "°C")
         if data.data.startswith("inertie_X"):
             self.value_inertie_X.configure(text=str(round(float(data.data.split("=")[-1])-1,2)))
         if data.data.startswith("inertie_Y"):
