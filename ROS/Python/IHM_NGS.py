@@ -873,16 +873,6 @@ class IHM_NGS(customtkinter.CTk):
         self.num_photo+=1 
         print("Capture de la fenêtre réalisée et enregistrée sous le nom 'Photo_Sysm@p_"+str(self.num_photo)+".jpg'")
 
-        """stream_window = gw.getWindowsWithTitle("Cam"+self.n_cam.get())[0]
-
-            # Prendre une capture d'écran de la fenêtre
-                screenshot = pyautogui.screenshot(region=(stream_window.left, stream_window.top, stream_window.width, stream_window.height))
-
-            # Enregistrer l'image sur l'ordinateur
-                screenshot.save('/home/roman/Bureau/NGS/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
-                print("Image captured and saved in /home/labo-m/NGS/Rapports Sysm@p/Photos Sysm@p")
-            except Exception as e:
-                print(e)"""
    
     def ouvre_ferme_pince(self, etat_pince, event=0):
         if etat_pince == 0:
@@ -1174,28 +1164,27 @@ class IHM_NGS(customtkinter.CTk):
             pdf.drawInlineImage(qr_code_path_, 52, 52, width=100, height=100)
             print(str(self.qr_code_path)+str(self.qr_code3_label.cget("text"))+".png")
         if self.Type_extract == "pdf":
-            if self.photo != []: 
+            if os.listdir(self.filename) != []: 
                 dist_up = 430
                 dist_left = 150
                 a=0
                 number_of_file = 0
                 for path in os.listdir(self.filename): 
                     number_of_file+=1
-                if number_of_file <= 9 :
+                if number_of_file <= 2 :
                     for i in os.listdir(self.filename):
-                        if a == 3 :
-                            dist_left +=100
-                            dist_up = 430
+                        if a == 1 :
+                            dist_left = 150
+                            dist_up = 230
                             a = 0
                         img_path = os.path.join(self.filename, i)
-                        pdf.drawImage(img_path, 150, dist_up, width=100, height=100)
-                        dist_up -= 100
+                        pdf.drawImage(img_path, 150, dist_up, width=200, height=200)
                         a+=1
                     pdf.save()
                     print("pdf saved")
                     showinfo("PDF SAVED !", pdf_path)
                 else :
-                    print("Veuillez sélectionner un dossier de 9 photos maximum")
+                    print("Veuillez sélectionner un dossier de 2 photos maximum")
             else :
                 pdf.save()
                 print("pdf saved")
@@ -1225,7 +1214,7 @@ class IHM_NGS(customtkinter.CTk):
     def dossier_photo(self, event=0):
         self.filename = filedialog.askdirectory(
                     title='Open a directory',
-                    initialdir='/home/ngs/Bureau/NGS/IHM_NGS/PHOTOS',
+                    initialdir='/home/ngs/Bureau/NGS/IHM_NGS/Prelevement ' + str(self.n_prelev.get()) + '/',
                     )
     
     def aperçu_photo(self, event=0):
