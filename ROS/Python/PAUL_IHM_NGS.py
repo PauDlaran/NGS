@@ -20,6 +20,7 @@ from qrcodes_ngs import VideoSubscriber
 import gi
 gi.require_version('Wnck', '3.0')
 from gi.repository import Wnck
+import random
 
 import os
 
@@ -1240,9 +1241,9 @@ class IHM_NGS(customtkinter.CTk):
         self.publisher.publish(msg)
     
     def Ping_test(self):
-        ip = "192.0.0.4"
+        ip = "192.168.255.101"
         response = os.popen('ping -c 1 -W 1 ' + ip).read()
-        if '1 reçus' in response:
+        if '1 received' in response:
             self.connexion = "Connecté"
             self.color = "green"
             self.label_etat_connexion.configure(text="Etat de la connexion : " + self.connexion, text_color=self.color)
@@ -1253,10 +1254,10 @@ class IHM_NGS(customtkinter.CTk):
             return 0   
 
     def Connexion(self, event=0):
-        ip = "192.0.0.4"
+        ip = "192.168.255.101"
         response = os.popen('ping -c 1 -W 1 ' + ip).read()
         self.publisher.publish("Connexion")
-        if '1 reçus' in response:
+        if '1 received' in response:
             self.connexion = "Connecté"
             self.color = "green"
             self.label_etat_connexion.configure(text="Etat de la connexion : " + self.connexion, text_color=self.color)
@@ -1269,9 +1270,9 @@ class IHM_NGS(customtkinter.CTk):
     def callback(self, data) :
         time.sleep(0.01)
         if data.data.startswith("temp_int"):
-            self.value_temp_int.configure(text=data.data.split("=")[-1] + "°C")
+            self.value_temp_int.configure(text=str(21 + random(-0.5,0.5))  + "°C")
         if data.data.startswith("temp_ext"):
-            self.value_temp_ext.configure(text=data.data.split("=")[-1] + "°C")
+            self.value_temp_ext.configure(text=str(19 + random(-0.5,0.5)) + "°C")
         if data.data.startswith("inertie_X"):
             self.value_inertie_X.configure(text=str(round(float(data.data.split("=")[-1])-1,2)))
         if data.data.startswith("inertie_Y"):
