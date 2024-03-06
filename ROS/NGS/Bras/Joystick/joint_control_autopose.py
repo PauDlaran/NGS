@@ -310,8 +310,9 @@ class TeleopNode:
 
     def set_testVal(self):
         joints = self.g.get_current_joint_values()
-        joints = self.joint_operationel
+        joints = self.ptn_sortiepark
         self.success = self.g.go(joints, wait=False)
+        
         # time.sleep(0.2)
         self.g.stop()
         self.g.clear_pose_targets()
@@ -456,7 +457,11 @@ if __name__=='__main__':
             node.run_REC_plan = False
 
             # time.sleep(0.1)
-            # node.initialisation_joint()
+            # node.initialisation_joint()*
+
+        if node.test:
+            node.set_testVal()
+            node.test = False
  
         if node.axe1:
             node.set_JointVal_axe1()
