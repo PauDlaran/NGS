@@ -1071,6 +1071,7 @@ class IHM_NGS(customtkinter.CTk):
             self.bouton_ouverture_3.grid()
     
     def Disable_Motors(self, event=0) :
+        self.bouton_disable_motors.configure(fg_color='green')
         self.publier_commande("DISABLE_ALL")
 
     def Ferme_Puissance(self, event=0) :
