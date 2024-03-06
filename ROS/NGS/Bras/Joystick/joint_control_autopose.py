@@ -38,7 +38,7 @@ class TeleopNode:
 
         #Initialisation de Moveit
         self.g = MoveGroupCommander("pipoudou_arm")
-        self.h = MoveGroupCommander("pipoudou_hand")    
+        self.h = MoveGroupCommander("pipoudou_hand")
         self.displacement = 0
         #Initialisation des joint
         self.joints_values_axe1 = self.g.get_current_joint_values()[0]
@@ -65,7 +65,14 @@ class TeleopNode:
         self.ptn_frotti_face = [-1.3832, 1.359, -1.002, 0.478]
         self.ptn_frotti_face_axe5 = 0.002
 
-        
+        self.ptn_aspi_haut = [-2.4307, 0.7403, -0.91734, 0.01899]
+        self.ptn_aspi_haut_axe5 = -0.0006
+
+        self.ptn_aspi_milieu = [-2.4288, 1.17621, -0.86753, 0.73317]
+        self.ptn_aspi_milieu_axe5 = -0.0006
+
+        self.ptn_aspi_bas = [-2.4717, 2.1211, 1.439555, 0.73585]
+        self.ptn_aspi_bas_axe5 = -0.1859
 
         self.joint_operationel = [-1.555, 0.6924, -0.9283, -0.2161]
         
@@ -84,7 +91,10 @@ class TeleopNode:
         self.planPince_doigts = False
         self.planPince_main = False
 
-        self.test = False
+        self.z_parking = False
+        self.ptn_aspi_bas_V = False
+        self.ptn_aspi_milieu_V = False
+        self.ptn_aspi_haut_V = False
 
         self.planAuto = False
         self.displacement = 0
@@ -192,21 +202,31 @@ class TeleopNode:
         
         #endregion
         
-        #TEST
+        #z parking
         if buttons[7] != 0:
-            self.test = True
+            self.z_parking = True
             self.displacement = 8
+        
+        ##A passer en mode plan?
+        #Z aspi haut 
+        if buttons[5] != 0:
+            self.ptn_aspi_haut_V = True
+            self.displacement = 9
+
+        #Z aspi milieu
+        if buttons[4] != 0:
+            self.ptn_aspi_milieu_V = True
+            self.displacement = 10 
+        
+        #Z aspi bas
+        if buttons[8] != 0:
+            self.ptn_aspi_bas_V = True
+            self.displacement = 11
 
         ######################################
         ## Déplacement automatique du bras ##
         ######################################
         
-        # Parking +Z
-        if buttons[4] != 0:
-            self.auto_pose = 1
-            self.chose_pose_to_plan(self.auto_pose)
-            self.displacement = 7
-            self.planAuto = True
 
         # Lambda vers opérationnel
         if buttons[9] != 0:
@@ -308,14 +328,42 @@ class TeleopNode:
         self.h.stop()
         self.h.clear_pose_targets()
 
-    def set_testVal(self):
+    def set_z_parkingVal(self):
         joints = self.g.get_current_joint_values()
         joints = self.ptn_sortiepark
         self.success = self.g.go(joints, wait=False)
-        
+
         # time.sleep(0.2)
         self.g.stop()
         self.g.clear_pose_targets()
+    
+    def set_z_aspi_hautVal(self):
+        joints = self.g.get_current_joint_values()
+        joints = self.ptn_aspi_haut
+        self.success = self.g.go(joints, wait=False)
+
+        # time.sleep(0.2)
+        self.g.stop()
+        self.g.clear_pose_targets()
+    
+    def set_z_aspi_milieuVal(self):
+        joints = self.g.get_current_joint_values()
+        joints = self.ptn_aspi_milieu
+        self.success = self.g.go(joints, wait=False)
+
+        # time.sleep(0.2)
+        self.g.stop()
+        self.g.clear_pose_targets()
+    
+    def set_z_aspi_basVal(self):
+        joints = self.g.get_current_joint_values()
+        joints = self.ptn_aspi_bas
+        self.success = self.g.go(joints, wait=False)
+
+        # time.sleep(0.2)
+        self.g.stop()
+        self.g.clear_pose_targets()
+    
 
     #Donne à l'arduino les données de position des axes en brut de moveit, la conversion se fait dans la RPi
     def send_to_arduino(self):
@@ -459,10 +507,22 @@ if __name__=='__main__':
             # time.sleep(0.1)
             # node.initialisation_joint()*
 
-        if node.test:
-            node.set_testVal()
-            node.test = False
- 
+        if node.z_parking:
+            node.set_z_parkingVal()
+            node.z_parking = False
+
+        if node.ptn_aspi_bas_V:
+            node.set_z_aspi_basVal()
+            node.ptn_aspi_bas_V = False
+        
+        if node.ptn_aspi_milieu_V:
+            node.set_z_aspi_milieuVal()
+            node.ptn_aspi_milieu_V = False
+        
+        if node.ptn_aspi_haut_V:
+            node.set_z_aspi_hautVal()
+            node.ptn_aspi_haut_V = False
+
         if node.axe1:
             node.set_JointVal_axe1()
             
