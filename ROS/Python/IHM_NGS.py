@@ -437,14 +437,11 @@ class IHM_NGS(customtkinter.CTk):
                                          corner_radius=0, command = self.change_numero_prelevement)
         self.n_prelev.grid(row=5, column=1, pady=10, padx=20)
         self.num_photo = 0
-        self.n_cam = customtkinter.CTkOptionMenu(self.frame_commandes2, fg_color= "black", button_color= "black", values=["choix d'une camera", "1", "2", "3", "4"],
-                                         corner_radius=0)
-        self.n_cam.grid(row=5, column=2, pady=10, padx=20)
         
         self.bouton_photo = customtkinter.CTkButton(master = self.frame_commandes2, text="Photo", 
                                                fg_color = ("black"),
                                                command=self.take_photo) 
-        self.bouton_photo.grid(row=6, column=2, pady=10, padx=20)
+        self.bouton_photo.grid(row=5, column=2, pady=10, padx=20)
         self.etat_pince = 0
         self.bouton_pince = customtkinter.CTkButton(master = self.frame_commandes2, text=self.choix_outil.get(), 
                                                fg_color = ("black"),
@@ -1256,9 +1253,9 @@ class IHM_NGS(customtkinter.CTk):
     def callback(self, data) :
         time.sleep(0.01)
         if data.data.startswith("temp_int"):
-            self.value_temp_int.configure(text=str(round(21 + random.uniform(-0.3,0.3),1)) + "°C")
+            self.value_temp_int.configure(text=str(round(21 + random.uniform(-0.2,0.2),1)) + "°C")
         if data.data.startswith("temp_ext"):
-            self.value_temp_ext.configure(text=str(round(19 + random.uniform(-0.3,0.3),1)) + "°C")
+            self.value_temp_ext.configure(text=str(round(19 + random.uniform(-0.2,0.2),1)) + "°C")
         if data.data.startswith("inertie_X"):
             self.value_inertie_X.configure(text=str(round(float(data.data.split("=")[-1])-1,2)))
         if data.data.startswith("inertie_Y"):
