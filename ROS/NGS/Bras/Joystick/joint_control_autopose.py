@@ -62,11 +62,10 @@ class TeleopNode:
         self.ptn_passboite2 = [1.8162, 0.6758, -1.5117, -0.4747]
         self.ptn_passboite3 = [2.4103, 0.5108, -1.2862, -0.4747]
 
-        self.ptn_frottiHaut_bras = [1.8113, 0.6581, -1.2479, -0.3324]
-        self.ptn_frottiHaut_axe5 = 1.0084
+        self.ptn_frotti_face = [-1.3832, 1.359, -1.002, 0.478]
+        self.ptn_frotti_face_axe5 = 0.002
 
-        self.ptn_frottiBas_bras = [1.8113, 0.6581, -0.8969, -0.0856]
-        self.ptn_frottiBas_axe5 = 1.0084
+        
 
         self.joint_operationel = [-1.555, 0.6924, -0.9283, -0.2161]
         
@@ -74,6 +73,7 @@ class TeleopNode:
         self.ptn_sortiepark_axe5 = 0
 
         self.joint_parking = [-3.15, 0.0, 0.0, 0.0]
+
 
 
         #Variable pour connaitre l'axe à déplacer
@@ -90,10 +90,12 @@ class TeleopNode:
         #Initialisation du pas de déplacement
         self.pas = 0.005
         self.pasA= 0.001
+        self.pasB = 0.0005
 
         #REC 
         self.REC_success_plan = 0
         self.positions = [0]
+        self.REC_hand_joint_position = [0]
 
     def initialisation_joint(self):
         #Initialisation Bras
@@ -116,32 +118,32 @@ class TeleopNode:
 
         #region
         #Incrémentation pour rot base axe1 (y)
-        if axes[0] > 0 and -3.1515 <= self.joints_values_axe1 <= 2.96706:
-            self.joints_values_axe1 -= self.pas
+        if axes[0] < 0 and -3.1515 <= self.joints_values_axe1 <= 2.96706:
+            self.joints_values_axe1 -= self.pasA
             self.axe1 = True
             self.displacement = 2
-        if axes[0] < 0 and -3.1515 <= self.joints_values_axe1 <= 2.96706:
-            self.joints_values_axe1 += self.pas
+        if axes[0] > 0 and -3.1515 <= self.joints_values_axe1 <= 2.96706:
+            self.joints_values_axe1 += self.pasA
             self.axe1 = True
             self.displacement = 2
 
         #Incrémentation pour rot axe2 tcp
         if axes[1] > 0:
-            self.joints_values_angle_axe2 += self.pas
+            self.joints_values_angle_axe2 += self.pasB
             self.axe2 = True
             self.displacement = 1
         if axes[1] < 0:
-            self.joints_values_angle_axe2 -= self.pas
+            self.joints_values_angle_axe2 -= self.pasB
             self.axe2 = True
             self.displacement = 1
 
         #Incrémentation pour rot axe 3
         if axes[2] > 0:
-            self.r += self.pas
+            self.joints_values_angle_axe3 += self.pasA
             self.axe3 = True
             self.displacement = 3
         if axes[2] < 0:
-            self.r -= self.pas
+            self.joints_values_angle_axe3 -= self.pasA
             self.axe3 = True
             self.displacement = 3
         
@@ -234,6 +236,13 @@ class TeleopNode:
             self.chose_pose_to_plan(self.auto_pose)
             self.displacement = 7
             self.planAuto = True    
+
+        #Frottis face
+        if buttons[6] != 0:
+            self.auto_pose = 8
+            self.chose_pose_to_plan(self.auto_pose)
+            self.displacement = 7
+            self.planAuto = True    
         
 
     def set_JointVal_axe1(self):
@@ -300,21 +309,15 @@ class TeleopNode:
     
     #Tentative de planification auto, grâce à des points prédéfinies (parking, opérationnel, ...)
     def chose_pose_to_plan(self, autopose):
-        
+        self.REC_hand_joint_position = self.h.get_current_joint_values()
 
         ####Réalise le déplacement dans la simu selon le point choisi
         #Z au dessus de parcking
-        if autopose == 1:            
-
-            hand_joints = self.h.get_current_joint_values()
-            hand_joints[0] = self.ptn_sortiepark_axe5
+        if autopose == 1:
+            self.REC_hand_joint_position[0] = self.ptn_sortiepark_axe5
 
             joints = self.g.get_current_joint_values()
             joints =  self.ptn_sortiepark
-
-            self.success = self.h.go(hand_joints, wait=True)
-            self.h.stop()
-            self.h.clear_pose_targets()
 
             self.success = self.g.go(joints, wait=True)
             self.g.stop()
@@ -322,6 +325,7 @@ class TeleopNode:
 
         #Opérationnel
         if autopose == 2:
+
             joints = self.g.get_current_joint_values()
             joints = self.joint_operationel
 
@@ -374,6 +378,17 @@ class TeleopNode:
             self.g.stop()
             self.g.clear_pose_targets()
 
+        # Attraper le frottis devant
+        if autopose == 8:
+            self.REC_hand_joint_position[0] = self.ptn_frotti_face_axe5
+
+            joints = self.g.get_current_joint_values()
+            joints = self.ptn_frotti_face
+
+            self.success = self.g.go(joints, wait=True)
+            self.g.stop()
+            self.g.clear_pose_targets()
+
 if __name__=='__main__':
     node = TeleopNode()
     adisplacement = 0
@@ -390,11 +405,23 @@ if __name__=='__main__':
 
         if node.planAuto:
             print("Auto")
+            #Run position pince
+            # local_REC_hand_joint_position = node.REC_hand_joint_position
+            # success = node.h.go(local_REC_hand_joint_position, wait=True)
+            # node.h.stop()
+            # node.h.clear_pose_targets()
 
             #Envoi les coordonées des joints à l'arduino avec les données enregistrés si réussite du déplacement
             local_REC_joint_position = node.REC_joint_position
-
-            for i in range(len(local_REC_joint_position)):
+            nmbr_frame = len(local_REC_joint_position)
+            if nmbr_frame % 2 == 0:
+                nmbr = nmbr_frame/4
+            else:
+                nmbr = nmbr_frame/4 + 0.25
+            # print(nmbr)
+            # print(nmbr_frame)
+            
+            for i in range(0, int(nmbr), 2):
                 pub = local_REC_joint_position[i].positions, node.h.get_current_joint_values()
                 node.pub.publish(str(pub))
 
@@ -434,7 +461,7 @@ if __name__=='__main__':
             node.planPince_main = False
 
         node.send_to_arduino()
-        time.sleep(2) #Pour ne pas encombrer le buffer de l'arduino, tester pour trouver la valeur la plus adaptée TODO
+        time.sleep(0.7) #Pour ne pas encombrer le buffer de l'arduino, tester pour trouver la valeur la plus adaptée TODO
             
         adisplacement = node.displacement
         time.sleep(0.05)
