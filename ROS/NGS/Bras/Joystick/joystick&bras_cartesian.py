@@ -107,7 +107,7 @@ class TeleopNode:
 
         #Initialisation du pas de déplacement
         self.pas = 0.005
-        self.pasA= 0.005
+        self.pasA= 0.001 #r
 
         #REC 
         self.REC_success_plan = 0
@@ -145,11 +145,11 @@ class TeleopNode:
 
         #Incrémentation pour x tcp
         if axes[1] > 0:
-            self.r += self.pas
+            self.r += self.pasA
             self.planr = True
             self.displacement = 1
         if axes[1] < 0:
-            self.r -= self.pas
+            self.r -= self.pasA
             self.planr = True
             self.displacement = 1
             
@@ -352,6 +352,8 @@ class TeleopNode:
     def move_group_callback(self, data):
         self.REC_success_plan = data.result.error_code.val #Si ==1, alors plannification réussie
         self.REC_joint_position = data.result.planned_trajectory.joint_trajectory.points #Position des joints
+        print("longueur joint : ")
+        print(len(self.REC_joint_position))
     
     #Tentative de planification auto, grâce à des points prédéfinies (parking, opérationnel, ...)
     def chose_pose_to_plan(self, autopose):
@@ -421,7 +423,6 @@ if __name__=='__main__':
     displacement = node.displacement
 
     while True:
-
         if displacement != node.displacement:
             node.initialisation_joint()
             node.initialisation_pose()
@@ -434,57 +435,56 @@ if __name__=='__main__':
         if node.planAuto:
             print("Auto")
             #Envoi les coordonées des joints à l'arduino avec les données enregistrés si réussite du déplacement
-            if node.REC_success_plan == 1 and node.planAuto:
-                
-                for i in range(len(node.REC_joint_position)-1):
-                    # print("tram REC :")
-                    # print(node.REC_joint_position[i].positions)
-                    # print(i)
-                    node.joints_values_pub = node.REC_joint_position[i].positions, node.h.get_current_joint_values()
-                    node.pub.publish(str(node.joints_values_pub))
-                    node.rate.sleep()
-            else:
-                print("P")
+            # if node.REC_success_plan == 1 and node.planAuto:
+            local_REC_joint_position = node.REC_joint_position
+            for i in range(len(local_REC_joint_position)):
+                # print("tram REC :")
+                # print(node.REC_joint_position[i].positions)
+                # print(i)
+                pub = local_REC_joint_position[i].positions, node.h.get_current_joint_values()
+                node.pub.publish(str(pub))
+                # node.rate.sleep()
+                time.sleep(2)
+            # else:
+            #     print("P")
 
             node.REC_success_plan = 0
             node.REC_joint_position = []
             node.planAuto = False
         
 
-        # #Controle Joystick
-        # else:
-        #     if node.planz:
-        #         node.execute_plan(node.plan_cartesian_path_z())
-        #         node.send_to_arduino()
-        #         node.planz = False
-                
-        #     if node.planr:
-        #         node.execute_plan(node.plan_cartesian_path_r())
-        #         node.send_to_arduino()
-        #         node.planr = False
-                
-        #     if node.axe1:
-        #         node.set_JointVal_axe1()
-        #         node.send_to_arduino()
-        #         node.axe1 = False
+        #Controle Joystick
+        if node.planz:
+            node.execute_plan(node.plan_cartesian_path_z())
+            node.send_to_arduino()
+            node.planz = False
             
-        #     if node.plan_axe4:
-        #         node.set_JointVal_axe4()
-        #         node.send_to_arduino()
-        #         node.plan_axe4 = False
+        if node.planr:
+            node.execute_plan(node.plan_cartesian_path_r())
+            node.send_to_arduino()
+            node.planr = False
             
-        #     if node.planPince_doigts:
-        #         node.set_pose_goal_pince_doigts()
-        #         node.send_to_arduino()
-        #         node.planPince_doigts = False
-            
-        #     if node.planPince_main:
-        #         node.set_pose_goal_pince_main()
-        #         node.send_to_arduino()
-        #         node.planPince_main = False
-        #     print("a")
-            
-        #     time.sleep(1)
+        if node.axe1:
+            node.set_JointVal_axe1()
+            node.send_to_arduino()
+            node.axe1 = False
+        
+        if node.plan_axe4:
+            node.set_JointVal_axe4()
+            node.send_to_arduino()
+            node.plan_axe4 = False
+        
+        if node.planPince_doigts:
+            node.set_pose_goal_pince_doigts()
+            node.send_to_arduino()
+            node.planPince_doigts = False
+        
+        if node.planPince_main:
+            node.set_pose_goal_pince_main()
+            node.send_to_arduino()
+            node.planPince_main = False
+        
+        time.sleep(1)
 
         displacement = node.displacement
         time.sleep(0.1)
