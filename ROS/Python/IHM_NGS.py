@@ -1184,7 +1184,7 @@ class IHM_NGS(customtkinter.CTk):
                     print("pdf saved")
                     showinfo("PDF SAVED !", pdf_path)
                 else :
-                    print("Veuillez sélectionner un dossier de 9 photos maximum")
+                    print("Veuillez sélectionner un dossier de 2 photos maximum")
             else :
                 pdf.save()
                 print("pdf saved")
