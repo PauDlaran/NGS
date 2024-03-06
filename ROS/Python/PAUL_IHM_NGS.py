@@ -686,11 +686,17 @@ class IHM_NGS(customtkinter.CTk):
                                                     font=("Roboto Medium", 20))
         self.label_fin.grid(row=0, column=0, pady=10, padx=20)
 
+        self.bouton_disable_motors = customtkinter.CTkButton(master = self.frame_fin, text="Désactiver les moteurs",
+                                                  fg_color = ("red"),
+                                                  command=self.Disable_Motors
+                                            )
+        self.bouton_disable_motors.grid(row=2, column=0, pady=10, padx=20)
+
         self.bouton_puissance = customtkinter.CTkButton(master = self.frame_fin, text="Eteindre le système", 
                                                fg_color = ("red"),
                                                command=self.Ferme_Puissance
                                             )
-        self.bouton_puissance.grid(row=2, column=0, pady=10, padx=20)
+        self.bouton_puissance.grid(row=3, column=0, pady=10, padx=20)
         
     def afficher_state(self, event=0):
         self.bouton_preparation.configure(fg_color = "gray75")
@@ -1063,6 +1069,9 @@ class IHM_NGS(customtkinter.CTk):
             self.bouton_ouverture_1.grid()
             self.bouton_ouverture_2.grid()
             self.bouton_ouverture_3.grid()
+    
+    def Disable_Motors(self, event=0) :
+        self.publier_commande("DISABLE_ALL")
 
     def Ferme_Puissance(self, event=0) :
         self.publier_commande("SHUTDOWN")
