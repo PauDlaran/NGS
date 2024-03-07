@@ -34,6 +34,9 @@ ptn_aspi_milieu_axe5 = -0.0006
 ptn_aspi_bas = [-2.4717, 2.1211, -1.439555, 0.73585]
 ptn_aspi_bas_axe5 = -0.1859
 
+ptn_solide = [-0.00172, 1.54135, -1.19842, 0.449188]
+ptn_solide_axe5 = 0.00224
+
 joint_operationel = [-1.555, 0.6924, -0.9283, -0.2161]
 
 ptn_sortiepark = [-3.05, -0.03, -0.18, -0.18] #PAS BONNE TODO
@@ -41,18 +44,18 @@ ptn_sortiepark_axe5 = 0
 
 joint_parking = [-3.15, 0.0, 0.0, 0.0]
 
-hand_joint = h.get_current_joint_values()
-hand_joint[0] = ptn_aspi_bas_axe5
+# hand_joint = h.get_current_joint_values()
+# hand_joint[0] = ptn_aspi_milieu_axe5
 
-success1 = h.go(hand_joint, wait=True)
+# success1 = h.go(hand_joint, wait=True)
 
-h.stop()
-h.clear_pose_targets()
+# h.stop()
+# h.clear_pose_targets()
 
 
 
 joints = g.get_current_joint_values()
-joints = ptn_aspi_bas
+joints = joint_operationel
 success = g.go(joints, wait=True)
 
 # time.sleep(0.2)
