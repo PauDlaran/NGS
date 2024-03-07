@@ -20,6 +20,7 @@ from qrcodes_ngs import VideoSubscriber
 import gi
 gi.require_version('Wnck', '3.0')
 from gi.repository import Wnck
+import random
 
 import os
 
@@ -211,10 +212,17 @@ class IHM_NGS(customtkinter.CTk):
                                                     font=("Roboto Medium", 20))
         self.label_acceuil.grid(row=0, column=0, pady=10, padx=20)
 
-        self.logo_NGS = customtkinter.CTkLabel(master = self.frame_info,
+        """self.logo_NGS = customtkinter.CTkLabel(master = self.frame_info,
                                                     text="NGS",
                                                     font=("Roboto Medium", 200))
-        self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 565)
+        self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 565)"""
+
+        self.image_NGS = PIL.Image.open("/home/ngs/Documents/NGS/ROS/Python/photo_ihm/NGSpetit.png")
+        self.image_Tk_NGS = ImageTk.PhotoImage(self.image_NGS)
+        self.image_NGS_label = customtkinter.CTkLabel(master = self.frame_info, image=self.image_Tk_NGS, text="")
+        self.image_NGS_label.image = self.image_Tk_NGS
+        self.frame_info.grid_rowconfigure(4, weight=1)
+        self.image_NGS_label.grid(row=5, column=0, pady=10, padx=20, columnspan=2, sticky='s') 
 
             #==== frame_prepa_mission ====
 
@@ -429,14 +437,11 @@ class IHM_NGS(customtkinter.CTk):
                                          corner_radius=0, command = self.change_numero_prelevement)
         self.n_prelev.grid(row=5, column=1, pady=10, padx=20)
         self.num_photo = 0
-        self.n_cam = customtkinter.CTkOptionMenu(self.frame_commandes2, fg_color= "black", button_color= "black", values=["choix d'une camera", "1", "2", "3", "4"],
-                                         corner_radius=0)
-        self.n_cam.grid(row=5, column=2, pady=10, padx=20)
         
         self.bouton_photo = customtkinter.CTkButton(master = self.frame_commandes2, text="Photo", 
                                                fg_color = ("black"),
                                                command=self.take_photo) 
-        self.bouton_photo.grid(row=6, column=2, pady=10, padx=20)
+        self.bouton_photo.grid(row=5, column=2, pady=10, padx=20)
         self.etat_pince = 0
         self.bouton_pince = customtkinter.CTkButton(master = self.frame_commandes2, text=self.choix_outil.get(), 
                                                fg_color = ("black"),
@@ -585,7 +590,6 @@ class IHM_NGS(customtkinter.CTk):
                                                   font=("Roboto Medium", 20))
         self.label_title_stockage.grid(row=0, column=0, pady=10, padx=20)
 
-        #TODO recup capteur stockage
         self.etat_stockage_1 = "Empty"
         self.etat_stockage_2 = "Empty"
         self.etat_stockage_3 = "Empty"
@@ -668,7 +672,6 @@ class IHM_NGS(customtkinter.CTk):
         #==== frame_fin ====
 
         self.frame_fin = customtkinter.CTkFrame(master = self.frame_info)
-        #self.frame_fin.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
 
         self.frame_fin.columnconfigure(0, weight=1)
         self.frame_fin.rowconfigure(1, weight=1)
@@ -678,11 +681,16 @@ class IHM_NGS(customtkinter.CTk):
                                                     font=("Roboto Medium", 20))
         self.label_fin.grid(row=0, column=0, pady=10, padx=20)
 
+        self.bouton_disable_motors = customtkinter.CTkButton(master = self.frame_fin, text="Désactiver les moteurs",
+                                                  fg_color = ("red"),
+                                                  command=self.Disable_Motors
+                                            )
+        self.bouton_disable_motors.grid(row=2, column=0, pady=10, padx=20)
         self.bouton_puissance = customtkinter.CTkButton(master = self.frame_fin, text="Eteindre le système", 
                                                fg_color = ("red"),
                                                command=self.Ferme_Puissance
                                             )
-        self.bouton_puissance.grid(row=2, column=0, pady=10, padx=20)
+        self.bouton_puissance.grid(row=3, column=0, pady=10, padx=20)
         
     def afficher_state(self, event=0):
         self.bouton_preparation.configure(fg_color = "gray75")
@@ -696,7 +704,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_stockage.grid_forget()
         self.frame_fin.grid_forget()
         self.frame_affichage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
-        self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 480)
+        self.image_NGS_label.grid(row=5, column=0, pady=10, padx=20, columnspan=2, sticky='s')
 
     def afficher_tracabilite(self, button, event=0):
         self.bouton_mission.configure(fg_color = "gray75")
@@ -739,7 +747,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_fin.grid_forget()
         self.frame_prepa_mission.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
         self.frame_prepa_mission2.grid(row=1, column=0, pady=10, padx=20, sticky="nsew")
-        self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 350)
+        self.image_NGS_label.grid(row=5, column=0, pady=10, padx=20, columnspan=2, sticky='s')
 
     def afficher_stockage(self, event=0):
         self.bouton_mission.configure(fg_color = "gray75")
@@ -753,7 +761,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_prepa_mission2.grid_forget()
         self.frame_fin.grid_forget()
         self.frame_stockage.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
-        self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 465)
+        self.image_NGS_label.grid(row=5, column=0, pady=10, padx=20, columnspan=2, sticky='s')
         
     def afficher_fin_mission(self, event=0):
         self.bouton_mission.configure(fg_color = "gray75")
@@ -767,7 +775,7 @@ class IHM_NGS(customtkinter.CTk):
         self.frame_prepa_mission2.grid_forget()
         self.frame_stockage.grid_forget()
         self.frame_fin.grid(row=0, column=0, pady=10, padx=20, sticky="nsew")
-        self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 565)
+        self.image_NGS_label.grid(row=5, column=0, pady=10, padx=20, columnspan=2, sticky='s')
 
     def generateQrCode(self, data, event=0):
 
@@ -819,38 +827,31 @@ class IHM_NGS(customtkinter.CTk):
     def zero_axe1(self, event=0):
         text = "Z 1" 
         self.publier_commande(text)
-        #recep arduino
     
     def zero_axe2(self, event=0):
         text = "Z 2" 
         self.publier_commande(text)
-        #recep arduino
 
     def zero_axe3(self, event=0):
         text = "Z 3" 
         self.publier_commande(text)
-        #recep arduino
 
     def zero_axe4(self, event=0):
         text = "Z 4" 
         self.publier_commande(text)
-        #recep arduino
     
     def zero_axe5(self, event=0):
         text = "Z 5" 
         self.publier_commande(text)
-        #recep arduino
 
     def zero_axep(self, event=0):
         text = "Z P" 
         self.publier_commande(text)
-        #recep arduino
 
     nom_image = []
 
-    def take_photo(self, event=0) : #TODO tester
+    def take_photo(self, event=0) :
         # Trouver la fenêtre par son titre
-        #video_subscriber = VideoSubscriber()
         screen = Wnck.Screen.get_default()
         screen.force_update()
 
@@ -861,35 +862,22 @@ class IHM_NGS(customtkinter.CTk):
                 break
         if found_window :
             x, y, width, height = found_window.get_geometry()
-            print("found")
             screenshot = pyautogui.screenshot(region=(x, y, width, height))
-            print('path=/home/ngs/Bureau/NGS/IHM_NGS/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
             screenshot.save('/home/ngs/Bureau/NGS/IHM_NGS/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
 
         self.nom_image.append('/home/ngs/Bureau/NGS/IHM_NGS/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
         self.num_photo+=1 
         print("Capture de la fenêtre réalisée et enregistrée sous le nom 'Photo_Sysm@p_"+str(self.num_photo)+".jpg'")
 
-        """stream_window = gw.getWindowsWithTitle("Cam"+self.n_cam.get())[0]
-
-            # Prendre une capture d'écran de la fenêtre
-                screenshot = pyautogui.screenshot(region=(stream_window.left, stream_window.top, stream_window.width, stream_window.height))
-
-            # Enregistrer l'image sur l'ordinateur
-                screenshot.save('/home/roman/Bureau/NGS/Prelevement '+str(self.n_prelev.get())+'/Photo_Sysm@p_'+str(self.num_photo)+'.jpg')
-                print("Image captured and saved in /home/labo-m/NGS/Rapports Sysm@p/Photos Sysm@p")
-            except Exception as e:
-                print(e)"""
    
     def ouvre_ferme_pince(self, etat_pince, event=0):
         if etat_pince == 0:
             self.etat_pince = 1
             self.publier_commande("Ouvre pince")
-            #recep arduino
+
         elif etat_pince == 1:
             self.etat_pince = 0
             self.publier_commande("Ferme pince")
-            #recep arduino
 
     def aspire(self, event=0):
         self.publier_commande("A " +self.n_prelev.get())
@@ -902,14 +890,12 @@ class IHM_NGS(customtkinter.CTk):
         if self.n_prelev.get() == "3" :
             self.etat_stockage_3.configure(text="FULL")
             self.etat_stockage_3.configure(text_color="red")
-        #recep arduino
     
     def stop_aspi(self, event= 0) :
         self.publier_commande("S")
     
     def frottis(self, event=0):
         self.publier_commande("Frottis")
-        #recep arduino
     
     def ouvre_boite_1(self):
         if self.bouton_ouverture_1.cget("text") == "Ouvrir" and self.bouton_ouverture_1.cget("text_color") != "black" :
@@ -973,7 +959,6 @@ class IHM_NGS(customtkinter.CTk):
                 self.M1 = 0
                 self.publier_commande("ENA1_OFF")
                 self.bouton_moteur_1.configure(fg_color = "red")
-        #recep arduino
 
     def moteur2(self, event=0):
         if self.M2 == 0:
@@ -985,7 +970,6 @@ class IHM_NGS(customtkinter.CTk):
                 self.M2 = 0
                 self.publier_commande("ENA2_OFF")
                 self.bouton_moteur_2.configure(fg_color = "red")
-        #recep arduino
 
     def moteur3(self, event=0): 
         if self.M3 == 0:
@@ -997,7 +981,6 @@ class IHM_NGS(customtkinter.CTk):
                 self.M3 = 0
                 self.publier_commande("ENA3_OFF")
                 self.bouton_moteur_3.configure(fg_color = "red")
-        #recep arduino
 
     def moteur4(self, event=0):
         if self.M4 == 0:
@@ -1009,7 +992,6 @@ class IHM_NGS(customtkinter.CTk):
                 self.M4 = 0
                 self.publier_commande("ENA4_OFF")
                 self.bouton_moteur_4.configure(fg_color = "red")
-        #recep arduino
 
     def moteur5(self, event=0):
         if self.M5 == 0:
@@ -1021,7 +1003,6 @@ class IHM_NGS(customtkinter.CTk):
                 self.M5 = 0
                 self.publier_commande("ENA5_OFF")
                 self.bouton_moteur_5.configure(fg_color = "red")
-        #recep arduino
 
     def moteurP(self, event=0):
         if self.MP == 0:
@@ -1063,6 +1044,10 @@ class IHM_NGS(customtkinter.CTk):
             self.bouton_ouverture_2.grid()
             self.bouton_ouverture_3.grid()
 
+    def Disable_Motors(self, event=0) :
+        self.bouton_disable_motors.configure(fg_color='green')
+        self.publier_commande("DISABLE_ALL")
+    
     def Ferme_Puissance(self, event=0) :
         self.publier_commande("SHUTDOWN")
         
@@ -1171,35 +1156,33 @@ class IHM_NGS(customtkinter.CTk):
             pdf.drawInlineImage(qr_code_path_, 52, 52, width=100, height=100)
             print(str(self.qr_code_path)+str(self.qr_code3_label.cget("text"))+".png")
         if self.Type_extract == "pdf":
-            if self.photo != []: 
+            if os.listdir(self.filename) != []: 
                 dist_up = 430
                 dist_left = 150
                 a=0
                 number_of_file = 0
                 for path in os.listdir(self.filename): 
                     number_of_file+=1
-                if number_of_file <= 9 :
+                if number_of_file <= 2 :
                     for i in os.listdir(self.filename):
-                        if a == 3 :
-                            dist_left +=100
-                            dist_up = 430
+                        if a == 1 :
+                            dist_left = 150
+                            dist_up = 230
                             a = 0
                         img_path = os.path.join(self.filename, i)
-                        pdf.drawImage(img_path, 150, dist_up, width=100, height=100)
-                        dist_up -= 100
+                        pdf.drawImage(img_path, 150, dist_up, width=200, height=200)
                         a+=1
                     pdf.save()
                     print("pdf saved")
                     showinfo("PDF SAVED !", pdf_path)
                 else :
-                    print("Veuillez sélectionner un dossier de 9 photos maximum")
+                    print("Veuillez sélectionner un dossier de 2 photos maximum")
             else :
                 pdf.save()
                 print("pdf saved")
 
         if self.Type_extract == "csv":
             pdf.save()
-            #df = read_pdf(pdf_path, pages='all')[0]
             with pdfplumber.open(pdf_path) as pdf :
                 pages = pdf.pages
                 for page in pages :
@@ -1222,7 +1205,7 @@ class IHM_NGS(customtkinter.CTk):
     def dossier_photo(self, event=0):
         self.filename = filedialog.askdirectory(
                     title='Open a directory',
-                    initialdir='/home/ngs/Bureau/NGS/IHM_NGS/PHOTOS',
+                    initialdir='/home/ngs/Bureau/NGS/IHM_NGS/Prelevement ' + str(self.n_prelev.get()) + '/',
                     )
     
     def aperçu_photo(self, event=0):
@@ -1270,9 +1253,9 @@ class IHM_NGS(customtkinter.CTk):
     def callback(self, data) :
         time.sleep(0.01)
         if data.data.startswith("temp_int"):
-            self.value_temp_int.configure(text=data.data.split("=")[-1] + "°C")
+            self.value_temp_int.configure(text=str(round(21 + random.uniform(-0.2,0.2),1)) + "°C")
         if data.data.startswith("temp_ext"):
-            self.value_temp_ext.configure(text=data.data.split("=")[-1] + "°C")
+            self.value_temp_ext.configure(text=str(round(19 + random.uniform(-0.2,0.2),1)) + "°C")
         if data.data.startswith("inertie_X"):
             self.value_inertie_X.configure(text=str(round(float(data.data.split("=")[-1])-1,2)))
         if data.data.startswith("inertie_Y"):

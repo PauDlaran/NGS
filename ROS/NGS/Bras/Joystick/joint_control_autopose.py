@@ -1,9 +1,7 @@
 """ 
-Code principale du groupe NGS
+Code principal du groupe NGS, permet de piloter le sysm@p joint par joint avec un joystick et de l'envoyer vers de pose prédéfinie
 
-Description: Noeud ROS permettant de contrôler le bras robotique LEO avec un joystick selon de manières
-    - Déplacement en coordonnées cartésiennes et joints pour les rotations
-    - Déplacement automatique vers des points prédéfinis
+Description: Noeud ROS permettant de contrôler le bras robotique LEO avec un joystick joint par joint
 
 Pub : 
    - /com_arduino (std_msgs/String) : Envoi des données de position des axes du bras à l'arduino
@@ -16,17 +14,12 @@ Fev 2024
 """
 
 import rospy
-import math
 import time
-import copy
 from sensor_msgs.msg import Joy
 from std_msgs.msg import String
 from moveit_commander import MoveGroupCommander
-from geometry_msgs.msg import Pose
 from sensor_msgs.msg import JointState
 from moveit_msgs.msg import MoveGroupActionResult
-
-import plan_auto
 
 class TeleopNode:
 
@@ -36,28 +29,22 @@ class TeleopNode:
     
         #Initialisation du subscriber
         self.joy_sub = rospy.Subscriber('/joy', Joy, self.acquisition_joy) #Queue size = 1 ??
-        self.joint_sate_sub = rospy.Subscriber('/move_group/fake_controller_joint_states', JointState, self.chose_pose_to_plan)
+        # self.joint_sate_sub = rospy.Subscriber('/move_group/fake_controller_joint_states', JointState, self.chose_pose_to_plan)
         self.move_group_result_sub = rospy.Subscriber('/move_group/result', MoveGroupActionResult, self.move_group_callback)
 
         #Initialisation du publisher
         self.pub = rospy.Publisher('/com_arduino', String, queue_size=10)
-        self.rate = rospy.Rate(0.5)
 
-        #####Initialisation de Moveit
-        #Group
+
+        #Initialisation de Moveit
         self.g = MoveGroupCommander("pipoudou_arm")
         self.h = MoveGroupCommander("pipoudou_hand")
-
-        #Initial poses
-        self.pose = Pose()
-        self.pose.position.x = self.g.get_current_pose().pose.position.x
-        self.pose.position.y = self.g.get_current_pose().pose.position.y
-        self.pose.position.z = self.g.get_current_pose().pose.position.z
-        self.pose.orientation = self.g.get_current_pose().pose.orientation
-    
-        #Initial joints
+        self.displacement = 0
+        #Initialisation des joint
         self.joints_values_axe1 = self.g.get_current_joint_values()[0]
-        self.joints_values_axe4 = self.g.get_current_joint_values()[3]
+        self.joints_values_angle_axe2 = self.g.get_current_joint_values()[1]
+        self.joints_values_angle_axe3 = self.g.get_current_joint_values()[2]
+        self.joints_values_angle_axe4 = self.g.get_current_joint_values()[3]
 
         self.joint_values_pince_main = self.h.get_current_joint_values()[0]
         self.joint_values_pince_doigt1 = self.h.get_current_joint_values()[1]
@@ -75,114 +62,126 @@ class TeleopNode:
         self.ptn_passboite2 = [1.8162, 0.6758, -1.5117, -0.4747]
         self.ptn_passboite3 = [2.4103, 0.5108, -1.2862, -0.4747]
 
-        self.ptn_frottiHaut_bras = [1.8113, 0.6581, -1.2479, -0.3324]
-        self.ptn_frottiHaut_axe5 = 1.0084
+        self.ptn_frotti_face = [-1.3832, 1.359, -1.002, 0.478]
+        self.ptn_frotti_face_axe5 = 0.002
 
-        self.ptn_frottiBas_bras = [1.8113, 0.6581, -0.8969, -0.0856]
-        self.ptn_frottiBas_axe5 = 1.0084
+        self.ptn_aspi_haut = [-2.4307, 0.7403, -0.91734, 0.01899]
+        self.ptn_aspi_haut_axe5 = -0.0006
+
+        self.ptn_aspi_milieu = [-2.4288, 1.17621, -0.86753, 0.73317]
+        self.ptn_aspi_milieu_axe5 = -0.0006
+
+        self.ptn_aspi_bas = [-2.4717, 2.1211, 1.439555, 0.73585]
+        self.ptn_aspi_bas_axe5 = -0.1859
 
         self.joint_operationel = [-1.555, 0.6924, -0.9283, -0.2161]
         
-        self.ptn_sortiepark = [-3.1515, -0.0307, -0.3040, -0.20605]
-        self.ptn_sortiepark_axe5 = -0.9709
+        self.ptn_sortiepark = [-3.05, -0.03, -0.18, -0.18] #PAS BONNE TODO
+        self.ptn_sortiepark_axe5 = 0
 
         self.joint_parking = [-3.15, 0.0, 0.0, 0.0]
 
+
+
         #Variable pour connaitre l'axe à déplacer
-        self.success = False
-        self.planr = False
-        self.planz = False
+        self.axe2 = False
+        self.axe3 = False
         self.axe1 = False
-        self.plan_axe4 = False
+        self.axe4 = False
         self.planPince_doigts = False
         self.planPince_main = False
+
+        self.z_parking = False
+        self.ptn_aspi_bas_V = False
+        self.ptn_aspi_milieu_V = False
+        self.ptn_aspi_haut_V = False
 
         self.planAuto = False
         self.displacement = 0
 
-        self.auto_pose = 0
-
-        #Initialisation de la position du bras en POLAIRE
-        self.r, self.theta = self.calcul_r_theta(self.pose.position.x, self.pose.position.y)
+        
 
         #Initialisation du pas de déplacement
         self.pas = 0.005
-        self.pasA= 0.001 #r
+        self.pasA= 0.001
+        self.pasB = 0.0005
 
         #REC 
         self.REC_success_plan = 0
         self.positions = [0]
-
-    #CODE FONCTIONNEL
-    #region
-    #Init de toutes les positions pour éviter les problèmes lors de changements de type de coordonnées
-    def initialisation_pose(self):
-        self.pose.position.x = self.g.get_current_pose().pose.position.x
-        self.pose.position.y = self.g.get_current_pose().pose.position.y
-        self.pose.position.z = self.g.get_current_pose().pose.position.z
-        self.pose.orientation.x = self.g.get_current_pose().pose.orientation.x
-        self.pose.orientation.y = self.g.get_current_pose().pose.orientation.y
-        self.pose.orientation.z = self.g.get_current_pose().pose.orientation.z
-        self.pose.orientation.w = self.g.get_current_pose().pose.orientation.w
+        self.REC_hand_joint_position = [0]
+        self.run_REC_plan = False
 
     def initialisation_joint(self):
+        #Initialisation Bras
         self.joints_values_axe1 = self.g.get_current_joint_values()[0]
-        self.joints_values_axe4 = self.g.get_current_joint_values()[3]
+        self.joints_values_angle_axe2 = self.g.get_current_joint_values()[1]
+        self.joints_values_angle_axe3 = self.g.get_current_joint_values()[2]
+        self.joints_values_angle_axe4 = self.g.get_current_joint_values()[3]
+
+        #Initialisation Pince
         self.joint_values_pince_main = self.h.get_current_joint_values()[0]
         self.joint_values_pince_doigt1 = self.h.get_current_joint_values()[1]
         self.joint_values_pince_doigt2 = self.h.get_current_joint_values()[2]
         self.joint_values_pince_doigt3 = self.h.get_current_joint_values()[3]
 
-    def initialisation_r_theta(self):
-        self.r, self.theta = self.calcul_r_theta(self.g.get_current_pose().pose.position.x, self.g.get_current_pose().pose.position.y)
    
     #Acquisition et traitement des données du joystick
     def acquisition_joy(self, joy_msg):
-        #region
         # time.sleep(0.1)
         axes = joy_msg.axes
         buttons = joy_msg.buttons
 
-        #Incrémentation pour x tcp
+        #region
+        #Incrémentation pour rot base axe1 (y)
+        if axes[0] < 0 and -3.1515 <= self.joints_values_axe1 <= 2.96706:
+            self.joints_values_axe1 -= self.pasA
+            self.axe1 = True
+            self.displacement = 2
+        if axes[0] > 0 and -3.1515 <= self.joints_values_axe1 <= 2.96706:
+            self.joints_values_axe1 += self.pasA
+            self.axe1 = True
+            self.displacement = 2
+
+        #Incrémentation pour rot axe2 tcp
         if axes[1] > 0:
-            self.r += self.pasA
-            self.planr = True
+            self.joints_values_angle_axe2 += self.pasB
+            self.axe2 = True
             self.displacement = 1
         if axes[1] < 0:
-            self.r -= self.pasA
-            self.planr = True
+            self.joints_values_angle_axe2 -= self.pasB
+            self.axe2 = True
             self.displacement = 1
-            
 
-        #Incrémentation pour axe1 base (y)
-        if axes[0] > 0 and -3.1515 <= self.joints_values_axe1 <= 2.96706:
-            self.joints_values_axe1 -= self.pas
-            self.axe1 = True
-            self.displacement = 2
-        if axes[0] < 0 and -3.1515 <= self.joints_values_axe1 <= 2.96706:
-            self.joints_values_axe1 += self.pas
-            self.axe1 = True
-            self.displacement = 2
-
-        #Incrémentation pour z tcp
-        if buttons[2] != 0:
-            self.pose.position.z += self.pas
-            self.planz = True
+        #Incrémentation pour rot axe 3
+        if axes[2] > 0:
+            self.joints_values_angle_axe3 += self.pasA
+            self.axe3 = True
             self.displacement = 3
-        if buttons[3] != 0:
-            self.pose.position.z -= self.pas
-            self.planz = True
+        if axes[2] < 0:
+            self.joints_values_angle_axe3 -= self.pasA
+            self.axe3 = True
             self.displacement = 3
         
-        #Incrémentation pour angle tcp
-        if axes[5] > 0 and -1.35 < self.joints_values_axe4 < 1.35:
-            self.joints_values_axe4 += self.pas
-            self.plan_axe4 = True
+        #Incrémentation pour angle tcp axe4
+        if axes[5] > 0 and -1.35 < self.joints_values_angle_axe4 < 1.35:
+            self.joints_values_angle_axe4 += self.pas
+            self.axe4 = True
             self.displacement = 4
-        if axes[5] < 0 and -1.35 < self.joints_values_axe4 < 1.35:
-            self.joints_values_axe4 -= self.pas
-            self.plan_axe4 = True
+        if axes[5] < 0 and -1.35 < self.joints_values_angle_axe4 < 1.35:
+            self.joints_values_angle_axe4 -= self.pas
+            self.axe4 = True
             self.displacement = 4
+
+        #incrémentation pour rot poignet axe 5
+        if axes[4] > 0 and -1.93518 <= self.joint_values_pince_main <= 2.0944:
+            self.joint_values_pince_main += self.pas
+            self.planPince_main = True
+            self.displacement = 6
+        if axes[4] < 0:
+            self.joint_values_pince_main -= self.pas
+            self.planPince_main = True
+            self.displacement = 6
 
         #Incrémentation pour pince
         if buttons[0] != 0 and -0.1 < self.joint_values_pince_doigt1 < 0.9:
@@ -200,25 +199,34 @@ class TeleopNode:
             self.displacement = 5
             print("pince fermée")
 
-        if axes[4] > 0 and -1.93518 <= self.joint_values_pince_main <= 2.0944:
-            self.joint_values_pince_main += self.pas
-            self.planPince_main = True
-            self.displacement = 6
-        if axes[4] < 0:
-            self.joint_values_pince_main -= self.pas
-            self.planPince_main = True
-            self.displacement = 6
+        
         #endregion
+        
+        #z parking
+        if buttons[7] != 0:
+            self.z_parking = True
+            self.displacement = 8
+        
+        ##A passer en mode plan?
+        #Z aspi haut 
+        if buttons[5] != 0:
+            self.ptn_aspi_haut_V = True
+            self.displacement = 9
+
+        #Z aspi milieu
+        if buttons[4] != 0:
+            self.ptn_aspi_milieu_V = True
+            self.displacement = 10 
+        
+        #Z aspi bas
+        if buttons[8] != 0:
+            self.ptn_aspi_bas_V = True
+            self.displacement = 11
+
         ######################################
         ## Déplacement automatique du bras ##
         ######################################
         
-        # Parking +Z
-        if buttons[4] != 0:
-            self.auto_pose = 1
-            self.chose_pose_to_plan(self.auto_pose)
-            self.displacement = 7
-            self.planAuto = True
 
         # Lambda vers opérationnel
         if buttons[9] != 0:
@@ -260,44 +268,16 @@ class TeleopNode:
             self.auto_pose = 7
             self.chose_pose_to_plan(self.auto_pose)
             self.displacement = 7
-            self.planAuto = True
+            self.planAuto = True    
 
-    ####Calculs
-    #Calculs des coordonnées polaires
-    def calcul_r_theta(self, x, y):
-        r = math.sqrt(x**2 + y**2)
-        theta = 2 * math.atan(y/(x+math.sqrt(x*x+y*y)))
-        return r, theta
- 
-    #Calculs des coordonnées cartésiennes
-    def polar_to_cartesian(self, r, theta):
-        x = r * math.cos(theta)
-        y = r * math.sin(theta)
-        return x, y
+        #Frottis face
+        if buttons[6] != 0:
+            self.auto_pose = 8
+            self.chose_pose_to_plan(self.auto_pose)
+            self.displacement = 7
+            self.planAuto = True    
+        
 
-    ####Planification
-    ##BRAS
-    #Plan selon l'axe du bras (r en coordonées polaire)
-    def plan_cartesian_path_r(self):
-        #Conversion des coordonnées polaires en cartésiennes
-        self.pose.position.x, self.pose.position.y = self.polar_to_cartesian(self.r, self.theta)
-
-        #Plan
-        waypoints = []       
-        waypoints.append(copy.deepcopy(self.pose))
-        (plan, fraction) = self.g.compute_cartesian_path(
-            waypoints, 0.02, 0.0)
-        return plan
-    
-    #Plan selon l'axe z
-    def plan_cartesian_path_z(self):
-        waypoints = []
-        waypoints.append(copy.deepcopy(self.pose))
-        (plan, fraction) = self.g.compute_cartesian_path(
-            waypoints, 0.02, 0.0)
-        return plan
-
-    #Plan selon la rotation de l'axe1 (base)
     def set_JointVal_axe1(self):
         joints = self.g.get_current_joint_values()
         joints[0] = self.joints_values_axe1
@@ -306,17 +286,30 @@ class TeleopNode:
         self.g.stop()
         self.g.clear_pose_targets()
 
-    #Plan selon la rotation de l'axe4
     def set_JointVal_axe4(self):
         joints = self.g.get_current_joint_values()
-        joints[3] = self.joints_values_axe4
+        joints[3] = self.joints_values_angle_axe4
+        self.success = self.g.go(joints, wait=False)
+        # time.sleep(0.2)
+        self.g.stop()
+        self.g.clear_pose_targets()
+    
+    def set_JointVal_axe2(self):
+        joints = self.g.get_current_joint_values()
+        joints[1] = self.joints_values_angle_axe2
+        self.success = self.g.go(joints, wait=False)
+        # time.sleep(0.2)
+        self.g.stop()
+        self.g.clear_pose_targets()
+    
+    def set_JointVal_axe3(self):
+        joints = self.g.get_current_joint_values()
+        joints[2] = self.joints_values_angle_axe3
         self.success = self.g.go(joints, wait=False)
         # time.sleep(0.2)
         self.g.stop()
         self.g.clear_pose_targets()
 
-    ##PINCE
-    #Plan des doigts de la pince (n'est en réalité qu'un moteur, mais necessaire pour la simulation)
     def set_pose_goal_pince_doigts(self):
         joints = self.h.get_current_joint_values()
         joints[1] = self.joint_values_pince_doigt1
@@ -327,7 +320,6 @@ class TeleopNode:
         self.h.stop()
         self.h.clear_pose_targets()
 
-    #Plan pour le poignet de la pince (+/- 120°)
     def set_pose_goal_pince_main(self):
         joints = self.h.get_current_joint_values()
         joints[0] = self.joint_values_pince_main
@@ -336,19 +328,49 @@ class TeleopNode:
         self.h.stop()
         self.h.clear_pose_targets()
 
-    #Donne à l'arduino les données de position des axes en brut de moveit (radian), la conversion se fait dans la RPi
+    def set_z_parkingVal(self):
+        joints = self.g.get_current_joint_values()
+        joints = self.ptn_sortiepark
+        self.success = self.g.go(joints, wait=False)
+
+        # time.sleep(0.2)
+        self.g.stop()
+        self.g.clear_pose_targets()
+    
+    def set_z_aspi_hautVal(self):
+        joints = self.g.get_current_joint_values()
+        joints = self.ptn_aspi_haut
+        self.success = self.g.go(joints, wait=False)
+
+        # time.sleep(0.2)
+        self.g.stop()
+        self.g.clear_pose_targets()
+    
+    def set_z_aspi_milieuVal(self):
+        joints = self.g.get_current_joint_values()
+        joints = self.ptn_aspi_milieu
+        self.success = self.g.go(joints, wait=False)
+
+        # time.sleep(0.2)
+        self.g.stop()
+        self.g.clear_pose_targets()
+    
+    def set_z_aspi_basVal(self):
+        joints = self.g.get_current_joint_values()
+        joints = self.ptn_aspi_bas
+        self.success = self.g.go(joints, wait=False)
+
+        # time.sleep(0.2)
+        self.g.stop()
+        self.g.clear_pose_targets()
+    
+
+    #Donne à l'arduino les données de position des axes en brut de moveit, la conversion se fait dans la RPi
     def send_to_arduino(self):
-        self.joints_values_pub = self.g.get_current_joint_values(), self.h.get_current_joint_values()
-        print("Tram_arduino_classic")
-        self.pub.publish(str(self.joints_values_pub))
+        if not self.run_REC_plan:
+            joints_values_pub = self.g.get_current_joint_values(), self.h.get_current_joint_values()
+            self.pub.publish(str(joints_values_pub))
 
-    #Exécution du plan selon la position du TCP (carthésien)
-    def execute_plan(self, plan):
-        self.g.execute(plan, wait=False)
-
-    #endregion
-
-    #Fonction de rappel pour '/move_group/result'
     def move_group_callback(self, data):
         self.REC_success_plan = data.result.error_code.val #Si ==1, alors plannification réussie
         self.REC_joint_position = data.result.planned_trajectory.joint_trajectory.points #Position des joints
@@ -357,11 +379,14 @@ class TeleopNode:
     
     #Tentative de planification auto, grâce à des points prédéfinies (parking, opérationnel, ...)
     def chose_pose_to_plan(self, autopose):
-        joints = self.g.get_current_joint_values()
+        self.REC_hand_joint_position = self.h.get_current_joint_values()
 
         ####Réalise le déplacement dans la simu selon le point choisi
         #Z au dessus de parcking
-        if autopose == 1:            
+        if autopose == 1:
+            self.REC_hand_joint_position[0] = self.ptn_sortiepark_axe5
+
+            joints = self.g.get_current_joint_values()
             joints =  self.ptn_sortiepark
 
             self.success = self.g.go(joints, wait=True)
@@ -370,6 +395,8 @@ class TeleopNode:
 
         #Opérationnel
         if autopose == 2:
+
+            joints = self.g.get_current_joint_values()
             joints = self.joint_operationel
 
             self.success = self.g.go(joints, wait=True)
@@ -378,6 +405,7 @@ class TeleopNode:
         
         #Pnt de passage droite
         if autopose == 3:
+            joints = self.g.get_current_joint_values()
             joints = self.ptn_pass
             
             self.success = self.g.go(joints, wait=True)
@@ -386,6 +414,7 @@ class TeleopNode:
         
         #Z boite 3
         if autopose == 4:
+            joints = self.g.get_current_joint_values()
             joints = self.ptn_passboite3
 
             self.success = self.g.go(joints, wait=True)
@@ -394,6 +423,7 @@ class TeleopNode:
         
         #Z boite 2
         if autopose == 5:
+            joints = self.g.get_current_joint_values()
             joints = self.ptn_passboite2
 
             self.success = self.g.go(joints, wait=True)
@@ -402,6 +432,7 @@ class TeleopNode:
         
         #Z boite 1
         if autopose == 6:
+            joints = self.g.get_current_joint_values()
             joints = self.ptn_passboite1
 
             self.success = self.g.go(joints, wait=True)
@@ -410,84 +441,122 @@ class TeleopNode:
         
         #Z frotti (boite 2)
         if autopose == 7:
+            joints = self.g.get_current_joint_values()
             joints = self.ptn_frottiHaut_bras
 
             self.success = self.g.go(joints, wait=True)
             self.g.stop()
             self.g.clear_pose_targets()
 
+        # Attraper le frottis devant
+        if autopose == 8:
+            self.REC_hand_joint_position[0] = self.ptn_frotti_face_axe5
 
+            joints = self.g.get_current_joint_values()
+            joints = self.ptn_frotti_face
+
+            self.success = self.g.go(joints, wait=True)
+            self.g.stop()
+            self.g.clear_pose_targets()
 
 if __name__=='__main__':
     node = TeleopNode()
-    displacement = node.displacement
-
+    adisplacement = 0
+    
     while True:
-        if displacement != node.displacement:
+        
+        #Initialisation des joints si changement d'axe de déplacements, permet d'éviter les faux planning
+        if adisplacement != node.displacement:
             node.initialisation_joint()
-            node.initialisation_pose()
-            node.initialisation_r_theta()
 
+            #TODO
+            
         time.sleep(0.1)
         node.acquisition_joy
-        
-        #Controle position pré-enregistrée, envoi à l'arduino
+
         if node.planAuto:
             print("Auto")
-            #Envoi les coordonées des joints à l'arduino avec les données enregistrés si réussite du déplacement
-            # if node.REC_success_plan == 1 and node.planAuto:
-            local_REC_joint_position = node.REC_joint_position
-            for i in range(len(local_REC_joint_position)):
-                # print("tram REC :")
-                # print(node.REC_joint_position[i].positions)
-                # print(i)
-                pub = local_REC_joint_position[i].positions, node.h.get_current_joint_values()
-                node.pub.publish(str(pub))
-                # node.rate.sleep()
-                time.sleep(2)
-            # else:
-            #     print("P")
+            node.run_REC_plan = True
+            #Run position pince
+            local_REC_hand_joint_position = node.REC_hand_joint_position
+            success = node.h.go(local_REC_hand_joint_position, wait=True)
+            node.h.stop()
+            node.h.clear_pose_targets()
 
+            #Envoi les coordonées des joints à l'arduino avec les données enregistrés si réussite du déplacement
+            local_REC_joint_position = node.REC_joint_position
+            nmbr_frame = len(local_REC_joint_position)
+            if nmbr_frame % 2 != 0:
+                local_REC_joint_position.append(local_REC_joint_position[-1])
+                nmbr_frame +=1
+            
+            
+            
+            for i in range(0, int(nmbr_frame), 2):
+                pub = local_REC_joint_position[i].positions, local_REC_hand_joint_position
+                node.pub.publish(str(pub))
+
+                time.sleep(2)
+
+            
             node.REC_success_plan = 0
             node.REC_joint_position = []
             node.planAuto = False
-        
+            node.run_REC_plan = False
 
-        #Controle Joystick
-        if node.planz:
-            node.execute_plan(node.plan_cartesian_path_z())
-            node.send_to_arduino()
-            node.planz = False
-            
-        if node.planr:
-            node.execute_plan(node.plan_cartesian_path_r())
-            node.send_to_arduino()
-            node.planr = False
-            
+            # time.sleep(0.1)
+            # node.initialisation_joint()*
+
+        if node.z_parking:
+            node.set_z_parkingVal()
+            node.z_parking = False
+
+        if node.ptn_aspi_bas_V:
+            node.set_z_aspi_basVal()
+            node.ptn_aspi_bas_V = False
+        
+        if node.ptn_aspi_milieu_V:
+            node.set_z_aspi_milieuVal()
+            node.ptn_aspi_milieu_V = False
+        
+        if node.ptn_aspi_haut_V:
+            node.set_z_aspi_hautVal()
+            node.ptn_aspi_haut_V = False
+
         if node.axe1:
             node.set_JointVal_axe1()
-            node.send_to_arduino()
+            
             node.axe1 = False
+
+        if node.axe2:
+            node.set_JointVal_axe2()
+            
+            node.axe2 = False
+
+        if node.axe3:
+            node.set_JointVal_axe3()
+            
+            node.axe3 = False
         
-        if node.plan_axe4:
+        if node.axe4:
             node.set_JointVal_axe4()
-            node.send_to_arduino()
-            node.plan_axe4 = False
+           
+            node.axe4 = False
         
         if node.planPince_doigts:
             node.set_pose_goal_pince_doigts()
-            node.send_to_arduino()
+            
             node.planPince_doigts = False
         
         if node.planPince_main:
             node.set_pose_goal_pince_main()
-            node.send_to_arduino()
+            
             node.planPince_main = False
-        
-        time.sleep(1)
 
-        displacement = node.displacement
-        time.sleep(0.1)
-        # print("------\n",node.pose)
+        node.send_to_arduino()
+        time.sleep(0.7) #Pour ne pas encombrer le buffer de l'arduino, tester pour trouver la valeur la plus adaptée TODO
+            
+        adisplacement = node.displacement
+        time.sleep(0.05)
         
     rospy.spin()

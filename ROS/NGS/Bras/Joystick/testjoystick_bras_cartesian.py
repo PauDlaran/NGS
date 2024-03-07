@@ -111,7 +111,7 @@ class TeleopNode:
 
         #REC 
         self.REC_success_plan = 0
-        self.positions = [0]
+        self.REC_joint_position = [0]
 
     #CODE FONCTIONNEL
     #region
@@ -357,11 +357,12 @@ class TeleopNode:
     
     #Tentative de planification auto, grâce à des points prédéfinies (parking, opérationnel, ...)
     def chose_pose_to_plan(self, autopose):
-        joints = self.g.get_current_joint_values()
+        
 
         ####Réalise le déplacement dans la simu selon le point choisi
         #Z au dessus de parcking
         if autopose == 1:            
+            joints = self.g.get_current_joint_values()
             joints =  self.ptn_sortiepark
 
             self.success = self.g.go(joints, wait=True)
@@ -370,6 +371,7 @@ class TeleopNode:
 
         #Opérationnel
         if autopose == 2:
+            joints = self.g.get_current_joint_values()
             joints = self.joint_operationel
 
             self.success = self.g.go(joints, wait=True)
@@ -378,6 +380,7 @@ class TeleopNode:
         
         #Pnt de passage droite
         if autopose == 3:
+            joints = self.g.get_current_joint_values()
             joints = self.ptn_pass
             
             self.success = self.g.go(joints, wait=True)
@@ -386,6 +389,7 @@ class TeleopNode:
         
         #Z boite 3
         if autopose == 4:
+            joints = self.g.get_current_joint_values()
             joints = self.ptn_passboite3
 
             self.success = self.g.go(joints, wait=True)
@@ -394,6 +398,7 @@ class TeleopNode:
         
         #Z boite 2
         if autopose == 5:
+            joints = self.g.get_current_joint_values()
             joints = self.ptn_passboite2
 
             self.success = self.g.go(joints, wait=True)
@@ -402,6 +407,7 @@ class TeleopNode:
         
         #Z boite 1
         if autopose == 6:
+            joints = self.g.get_current_joint_values()
             joints = self.ptn_passboite1
 
             self.success = self.g.go(joints, wait=True)
@@ -410,6 +416,7 @@ class TeleopNode:
         
         #Z frotti (boite 2)
         if autopose == 7:
+            joints = self.g.get_current_joint_values()
             joints = self.ptn_frottiHaut_bras
 
             self.success = self.g.go(joints, wait=True)
