@@ -71,7 +71,7 @@ class TeleopNode:
         self.ptn_aspi_milieu = [-2.4288, 1.17621, -0.86753, 0.73317]
         self.ptn_aspi_milieu_axe5 = -0.0006
 
-        self.ptn_aspi_bas = [-2.4717, 2.1211, 1.439555, 0.73585]
+        self.ptn_aspi_bas = [-2.4717, 2.1211, -1.439555, 0.73585]
         self.ptn_aspi_bas_axe5 = -0.1859
 
         self.joint_operationel = [-1.555, 0.6924, -0.9283, -0.2161]
