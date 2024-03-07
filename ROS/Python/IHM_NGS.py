@@ -793,7 +793,6 @@ class IHM_NGS(customtkinter.CTk):
             print (str(file_path) + str(data) + ".png saved")
 
     def readQrCode1(self, event=0):
-        print("on est dedans")
         frame = self.video_subscriber.get_video_frame()
         # Lire le code QR
         self.qr_data = self.video_subscriber.readQrCode(frame)     
@@ -802,7 +801,6 @@ class IHM_NGS(customtkinter.CTk):
         self.generateQrCode(self.qr_data)
 
     def readQrCode2(self, event=0):
-        print("on est dedans2")
         frame = self.video_subscriber.get_video_frame()
         # Lire le code QR
         self.qr_data = self.video_subscriber.readQrCode(frame)     
@@ -811,7 +809,6 @@ class IHM_NGS(customtkinter.CTk):
         self.generateQrCode(self.qr_data)
 
     def readQrCode3(self, event=0):
-        print("on est dedans3")
         frame = self.video_subscriber.get_video_frame()
         # Lire le code QR
         self.qr_data = self.video_subscriber.readQrCode(frame)     
