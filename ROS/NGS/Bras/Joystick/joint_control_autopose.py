@@ -71,13 +71,16 @@ class TeleopNode:
         self.ptn_aspi_milieu = [-2.4288, 1.17621, -0.86753, 0.73317]
         self.ptn_aspi_milieu_axe5 = -0.0006
 
-        self.ptn_aspi_bas = [-2.4717, 2.1211, 1.439555, 0.73585]
+        self.ptn_aspi_bas = [-2.4717, 2.1211, -1.439555, 0.73585]
         self.ptn_aspi_bas_axe5 = -0.1859
 
         self.joint_operationel = [-1.555, 0.6924, -0.9283, -0.2161]
         
         self.ptn_sortiepark = [-3.05, -0.03, -0.18, -0.18] #PAS BONNE TODO
         self.ptn_sortiepark_axe5 = 0
+
+        self.ptn_solide = [-0.00172, 1.54135, -1.19842, 0.449188]
+        self.ptn_solide_axe5 = 0.00224
 
         self.joint_parking = [-3.15, 0.0, 0.0, 0.0]
 
@@ -95,6 +98,7 @@ class TeleopNode:
         self.ptn_aspi_bas_V = False
         self.ptn_aspi_milieu_V = False
         self.ptn_aspi_haut_V = False
+        self.ptn_solideV = False
 
         self.planAuto = False
         self.displacement = 0
@@ -222,6 +226,10 @@ class TeleopNode:
         if buttons[8] != 0:
             self.ptn_aspi_bas_V = True
             self.displacement = 11
+
+        if buttons[14] != 0:
+            self.ptn_solideV = True
+            self.displacement = 12
 
         ######################################
         ## Déplacement automatique du bras ##
@@ -363,6 +371,15 @@ class TeleopNode:
         # time.sleep(0.2)
         self.g.stop()
         self.g.clear_pose_targets()
+
+    def set_z_solideVal(self):
+        joints = self.g.get_current_joint_values()
+        joints = self.ptn_solide
+        self.success = self.g.go(joints, wait=False)
+
+        # time.sleep(0.2)
+        self.g.stop()
+        self.g.clear_pose_targets()
     
 
     #Donne à l'arduino les données de position des axes en brut de moveit, la conversion se fait dans la RPi
@@ -439,14 +456,6 @@ class TeleopNode:
             self.g.stop()
             self.g.clear_pose_targets()
         
-        #Z frotti (boite 2)
-        if autopose == 7:
-            joints = self.g.get_current_joint_values()
-            joints = self.ptn_frottiHaut_bras
-
-            self.success = self.g.go(joints, wait=True)
-            self.g.stop()
-            self.g.clear_pose_targets()
 
         # Attraper le frottis devant
         if autopose == 8:
@@ -522,6 +531,10 @@ if __name__=='__main__':
         if node.ptn_aspi_haut_V:
             node.set_z_aspi_hautVal()
             node.ptn_aspi_haut_V = False
+
+        if node.ptn_solideV:
+            node.set_z_solideVal()
+            node.ptn_solideV = False
 
         if node.axe1:
             node.set_JointVal_axe1()
