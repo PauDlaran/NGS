@@ -217,12 +217,12 @@ class IHM_NGS(customtkinter.CTk):
                                                     font=("Roboto Medium", 200))
         self.logo_NGS.grid(row=3, column=0, pady=10, padx=20, ipadx = 350,ipady = 565)"""
 
-        self.image_NGS = PIL.Image.open("/home/polo/Documents/NGS/ROS/Python/photo_ihm/NGSpetit.png")
-        self.image_Tk_NGS = ImageTk.PhotoImage(self.image_NGS)
-        self.image_NGS_label = customtkinter.CTkLabel(master = self.frame_info, image=self.image_Tk_NGS, text="")
-        self.image_NGS_label.image = self.image_Tk_NGS
-        self.frame_info.grid_rowconfigure(4, weight=1)
-        self.image_NGS_label.grid(row=5, column=0, pady=10, padx=20, columnspan=2, sticky='s')  
+        # self.image_NGS = PIL.Image.open("/home/polo/Documents/NGS/ROS/Python/photo_ihm/NGSpetit.png")
+        # self.image_Tk_NGS = ImageTk.PhotoImage(self.image_NGS)
+        # self.image_NGS_label = customtkinter.CTkLabel(master = self.frame_info, image=self.image_Tk_NGS, text="")
+        # self.image_NGS_label.image = self.image_Tk_NGS
+        # self.frame_info.grid_rowconfigure(4, weight=1)
+        # self.image_NGS_label.grid(row=5, column=0, pady=10, padx=20, columnspan=2, sticky='s')  
 
             #==== frame_prepa_mission ====
 
@@ -340,11 +340,11 @@ class IHM_NGS(customtkinter.CTk):
                                                         )
         self.qr_code3.grid(row=8, column=1, pady=10, padx=20)          
 
-        self.image = PIL.Image.open("/home/polo/Documents/NGS/ROS/Python/photo_ihm/1.png")
-        self.image_Tk = ImageTk.PhotoImage(self.image)
-        self.image_label = customtkinter.CTkLabel(master = self.frame_prepa_mission2, image=self.image_Tk, text="")
-        self.image_label.image = self.image_Tk
-        self.image_label.grid(row=0, column=0, pady=10, padx=20, columnspan=2)                                       
+        # self.image = PIL.Image.open("/home/polo/Documents/NGS/ROS/Python/photo_ihm/1.png")
+        # self.image_Tk = ImageTk.PhotoImage(self.image)
+        # self.image_label = customtkinter.CTkLabel(master = self.frame_prepa_mission2, image=self.image_Tk, text="")
+        # self.image_label.image = self.image_Tk
+        # self.image_label.grid(row=0, column=0, pady=10, padx=20, columnspan=2)                                       
         #==== frame_affichage ====
 
         self.frame_affichage = customtkinter.CTkFrame(master = self.frame_info)

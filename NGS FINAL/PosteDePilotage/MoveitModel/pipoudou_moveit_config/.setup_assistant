@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: pipoudou
+    relative_path: urdf/pipoudou.urdf
+    xacro_args: ""
+  SRDF:
+    relative_path: config/pipoudou.srdf
+  CONFIG:
+    author_name: paul daran
+    author_email: paul.daran@mines-ales.org
+    generated_timestamp: 1709198860

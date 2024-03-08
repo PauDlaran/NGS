@@ -1,0 +1,9 @@
+<launch>
+    
+    <node name="flux_cam" pkg="camera" type="flux_cam.py" output="screen"/>
+    <node name="flux_cam2" pkg="camera" type="flux_cam2.py" output="screen"/>
+    <node name="flux_cam3" pkg="camera" type="flux_cam3.py" output="screen"/>
+    <include file="/opt/ros/noetic/share/depthai_ros_driver/launch/camera.launch"/>
+    <node name="main_arduino" pkg="arduino" type="main_arduino.py" output="screen"/>
+    
+</launch>

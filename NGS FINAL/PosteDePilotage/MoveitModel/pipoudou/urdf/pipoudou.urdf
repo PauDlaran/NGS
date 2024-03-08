@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot name="pipoudou">
+    <link name="base_link">
+        <!-- <inertial>
+            <origin xyz="-0.00589404771376543 -0.172216921474908 0.0957187730055203" rpy="0 0 0" />
+            <mass value="10.9085561099122" />
+            <inertia ixx="0.0835006955896213" ixy="-0.000486302956665482" ixz="-1.68830866381301E-05" iyy="0.0780175982250961" iyz="-0.000372207979748105" izz="0.144629915038495" />
+        </inertial> -->
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/base_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/base_link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="Joint_Link_1">
+        <inertial>
+            <origin xyz="-0.0419354714749062 0.0571907967511279 -0.0194583189020789" rpy="0 0 0" />
+            <mass value="4.05461553371115" />
+            <inertia ixx="0.0186674836378778" ixy="0.00144429847151249" ixz="0.000894000961160699" iyy="0.0327190095637458" iyz="0.000447725667688059" izz="0.0226784769639849" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Joint_Link_1.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Joint_Link_1.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="Joint_Link_1" type="revolute">
+        <origin xyz="0 0 0.126" rpy="1.5708 0 3.1415" />
+        <parent link="base_link" />
+        <child link="Joint_Link_1" />
+        <axis xyz="0 1 0" />
+        <limit
+          lower="-3.1515"
+          upper="2.96706"
+          effort="0"
+          velocity="0" />
+    </joint>
+    <link name="Joint_Link_2">
+        <inertial>
+            <origin xyz="-0.00530103912834451 -0.267556363757934 -0.201059920551774" rpy="0 0 0" />
+            <mass value="2.14091331405897" />
+            <inertia ixx="0.0351900118557783" ixy="-0.00115816661681989" ixz="-0.000870324597093157" iyy="0.0151835424012374" iyz="-0.0159425460381403" izz="0.0244184526983205" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Joint_Link_2.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Joint_Link_2.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="Joint_Link_2" type="revolute">
+        <origin xyz="-0.0015 0.0542 0" rpy="1.5707963267949 1.5707963267949 0" />
+        <parent link="Joint_Link_1" />
+        <child link="Joint_Link_2" />
+        <axis xyz="1 0 0" />
+        <limit
+          lower="-0.03073"
+          upper="2.5"
+          effort="0"
+          velocity="0" />
+    </joint>
+    <link name="Joint_Link_3">
+        <inertial>
+            <origin xyz="0.00781705470548592 -0.352845842017961 -0.094791262080411" rpy="0 0 0" />
+            <mass value="2.05117896930323" />
+            <inertia ixx="0.0447591316884685" ixy="0.00202554005626431" ixz="0.000544156896478173" iyy="0.00549957380946362" iyz="-0.0107586884747149" izz="0.042656832970381" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Joint_Link_3.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Joint_Link_3.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="Joint_Link_3" type="revolute">
+        <origin xyz="0.0729999976962511 -0.279802779166052 -0.21026270498443" rpy="-3.14159265358979 0 0" />
+        <parent link="Joint_Link_2" />
+        <child link="Joint_Link_3" />
+        <axis xyz="1 0 0" />
+        <limit
+          lower="-2.87979"
+          upper="0.0872665"
+          effort="0"
+          velocity="0" />
+    </joint>
+    <link name="Joint_Link_4">
+        <inertial>
+            <origin xyz="-0.00128145900425441 -0.00643282828050407 -0.0156990390541649" rpy="0 0 0" />
+            <mass value="0.479895774970971" />
+            <inertia ixx="0.000704597872477017" ixy="3.95597557777906E-06" ixz="9.65438721271254E-06" iyy="0.000430271991839334" iyz="3.22728443924336E-05" izz="0.000583030081586466" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Joint_Link_4.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Joint_Link_4.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="Joint_Link_4" type="revolute">
+        <origin xyz="-0.0730000000000001 -0.386302779166053 -0.103779394913364" rpy="3.14159265358979 0 3.14159265358979" />
+        <parent link="Joint_Link_3" />
+        <child link="Joint_Link_4" />
+        <axis xyz="1 0 0" />
+        <limit
+          lower="-1.35"
+          upper="1.35"
+          effort="0"
+          velocity="0" />
+    </joint>
+    <link name="Hand_Link">
+        <inertial>
+            <origin xyz="0.003538022414353 0.0934009674500111 0.00572272841520698" rpy="0 0 0" />
+            <mass value="0.270355978196213" />
+            <inertia ixx="0.000246871496337952" ixy="8.77420170325517E-07" ixz="-2.4101072455635E-07" iyy="0.000198420179541911" iyz="2.18406704397907E-06" izz="0.000248795450899793" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Hand_Link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Hand_Link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="Hand_Link" type="revolute">
+        <origin xyz="0 -0.022 0.0179" rpy="1.5707963267949 0 0.49" />
+        <parent link="Joint_Link_4" />
+        <child link="Hand_Link" />
+        <axis xyz="0 1 0" />
+        <limit
+          lower="-1.93518"
+          upper="2.0944"
+          effort="0"
+          velocity="0" />
+    </joint>
+    <link name="Finger_link_1">
+        <inertial>
+            <origin xyz="1.45666936846034E-09 0.0542700697214627 0.00419209902056168" rpy="0 0 0" />
+            <mass value="0.00737946646756108" />
+            <inertia ixx="1.64260095148187E-06" ixy="3.13372896015046E-14" ixz="9.35831460991248E-15" iyy="3.87683699423791E-07" iyz="3.9770445208839E-08" izz="1.42567240614298E-06" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Finger_link_1.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Finger_link_1.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="Finger_link_1" type="revolute">
+        <origin xyz="-0.015 0.168 0.0259807621135345" rpy="-0.249776778199149 -0.5235987755983 0" />
+        <parent link="Hand_Link" />
+        <child link="Finger_link_1" />
+        <axis xyz="1 0 0" />
+        <limit
+          lower="-0.1"
+          upper="1"
+          effort="0"
+          velocity="0" />
+    </joint>
+    <link name="Finger_link_2">
+        <inertial>
+            <origin xyz="1.45667027042683E-09 0.0542700697214612 0.00419209902056353" rpy="0 0 0" />
+            <mass value="0.00737946646756108" />
+            <inertia ixx="1.64260095148187E-06" ixy="3.13372893341082E-14" ixz="9.35831476283802E-15" iyy="3.8768369942379E-07" iyz="3.97704452088391E-08" izz="1.42567240614298E-06" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Finger_link_2.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Finger_link_2.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="Finger_link_2" type="revolute">
+        <origin xyz="0.0300000000000032 0.168000000000006 0" rpy="0.24977677819926 1.5707963267949 0" />
+        <parent link="Hand_Link" />
+        <child link="Finger_link_2" />
+        <axis xyz="1 0 0" />
+        <limit
+          lower="-0.6"
+          upper="0.50"
+          effort="0"
+          velocity="0" />
+    </joint>
+    <link name="Finger_link_3">
+        <inertial>
+            <origin xyz="1.46086900909559E-09 0.0542700696800847 0.00419209904821059" rpy="0 0 0" />
+            <mass value="0.00737946643540091" />
+            <inertia ixx="1.64260095006934E-06" ixy="3.15464630808837E-14" ixz="9.61441978607514E-15" iyy="3.87683698622118E-07" iyz="3.97704458796477E-08" izz="1.42567240579581E-06" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Finger_link_3.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://pipoudou/meshes/Finger_link_3.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="Finger_link_3" type="revolute">
+        <origin xyz="-0.0149999999999997 0.168000000000001 -0.0259807621135309" rpy="2.89181587539058 -0.523598775598316 3.14159265358979" />
+        <parent link="Hand_Link" />
+        <child link="Finger_link_3" />
+        <axis xyz="1 0 0" />
+        <limit
+          lower="-0.1"
+          upper="1"
+          effort="0"
+          velocity="0" />
+    </joint>
+    <transmission name="trans_Joint_Link_1">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="Joint_Link_1">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="Joint_Link_1_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_Joint_Link_2">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="Joint_Link_2">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="Joint_Link_2_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_Joint_Link_3">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="Joint_Link_3">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="Joint_Link_3_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_Joint_Link_4">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="Joint_Link_4">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="Joint_Link_4_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_Hand_Link">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="Hand_Link">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="Hand_Link_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_Finger_link_1">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="Finger_link_1">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="Finger_link_1_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_Finger_link_2">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="Finger_link_2">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="Finger_link_2_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_Finger_link_3">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="Finger_link_3">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="Finger_link_3_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <gazebo>
+        <plugin name="gazebo_ros_control">
+            <robotNamespace>/</robotNamespace>
+        </plugin>
+    </gazebo>
+</robot>
+
